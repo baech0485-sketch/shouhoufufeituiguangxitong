@@ -1,6 +1,8 @@
 export function mapStore(doc) {
+  const id = doc._id.toString();
   return {
-    id: doc._id.toString(),
+    id,
+    storeCode: doc.sourceStoreId || id,
     name: doc.name,
     platform: doc.platform,
     openDate: doc.openDate,

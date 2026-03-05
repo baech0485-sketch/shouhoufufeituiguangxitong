@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Sidebar from './components/Sidebar';
-import StoreEntry from './components/StoreEntry';
 import StoreList from './components/StoreList';
 import StoreDetailModal from './components/StoreDetailModal';
 import Dashboard from './components/Dashboard';
 import { Store, FollowUp, Recharge, ViewState } from './types';
-import { followUpApi, rechargeApi, storeApi } from './api';
+import { followUpApi, rechargeApi } from './api';
+import { DEFAULT_AFTER_SALES_STAFF } from './constants/staff';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<ViewState>('dashboard');
@@ -15,6 +15,21 @@ export default function App() {
   const [storeListRefreshKey, setStoreListRefreshKey] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+
+  const staffOptions = useMemo(() => {
+    const allStaff = new Set<string>(DEFAULT_AFTER_SALES_STAFF);
+    followUps.forEach((item) => {
+      if (item.staffName) {
+        allStaff.add(item.staffName);
+      }
+    });
+    recharges.forEach((item) => {
+      if (item.staffName) {
+        allStaff.add(item.staffName);
+      }
+    });
+    return Array.from(allStaff).sort((a, b) => a.localeCompare(b, 'zh-CN'));
+  }, [followUps, recharges]);
 
   useEffect(() => {
     const initializeData = async () => {
@@ -37,19 +52,6 @@ export default function App() {
 
     void initializeData();
   }, []);
-
-  const handleAddStore = (newStore: Omit<Store, 'id' | 'status'>) => {
-    setErrorMessage('');
-    void (async () => {
-      try {
-        await storeApi.create(newStore);
-        setStoreListRefreshKey((prevKey) => prevKey + 1);
-      } catch (error) {
-        const message = error instanceof Error ? error.message : '新增店铺失败';
-        setErrorMessage(message);
-      }
-    })();
-  };
 
   const handleAddFollowUp = (newFollowUp: Omit<FollowUp, 'id'>) => {
     setErrorMessage('');
@@ -89,6 +91,46 @@ export default function App() {
     })();
   };
 
+  const handleDeleteFollowUp = async (followUpId: string) => {
+    setErrorMessage('');
+    try {
+      const deletedFollowUp = await followUpApi.remove(followUpId);
+      setFollowUps((prevFollowUps) =>
+        prevFollowUps.filter((followUp) => followUp.id !== followUpId),
+      );
+      setStoreListRefreshKey((prevKey) => prevKey + 1);
+      setSelectedStore((prevStore) =>
+        prevStore && prevStore.id === deletedFollowUp.storeId
+          ? { ...prevStore, status: deletedFollowUp.storeStatus }
+          : prevStore,
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '删除跟进记录失败';
+      setErrorMessage(message);
+      throw error;
+    }
+  };
+
+  const handleDeleteRecharge = async (rechargeId: string) => {
+    setErrorMessage('');
+    try {
+      const deletedRecharge = await rechargeApi.remove(rechargeId);
+      setRecharges((prevRecharges) =>
+        prevRecharges.filter((recharge) => recharge.id !== rechargeId),
+      );
+      setStoreListRefreshKey((prevKey) => prevKey + 1);
+      setSelectedStore((prevStore) =>
+        prevStore && prevStore.id === deletedRecharge.storeId
+          ? { ...prevStore, status: deletedRecharge.storeStatus }
+          : prevStore,
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '删除充值记录失败';
+      setErrorMessage(message);
+      throw error;
+    }
+  };
+
   return (
     <div className="flex h-screen bg-slate-50 font-sans text-slate-900 overflow-hidden">
       <Sidebar currentView={currentView} onChangeView={setCurrentView} />
@@ -107,13 +149,12 @@ export default function App() {
         {currentView === 'dashboard' && (
           <Dashboard recharges={recharges} followUps={followUps} />
         )}
-        {currentView === 'entry' && (
-          <StoreEntry onAddStore={handleAddStore} />
-        )}
         {currentView === 'list' && (
           <StoreList
             onSelectStore={setSelectedStore}
             refreshKey={storeListRefreshKey}
+            followUps={followUps}
+            recharges={recharges}
           />
         )}
       </main>
@@ -126,6 +167,9 @@ export default function App() {
           onClose={() => setSelectedStore(null)}
           onAddFollowUp={handleAddFollowUp}
           onAddRecharge={handleAddRecharge}
+          onDeleteFollowUp={handleDeleteFollowUp}
+          onDeleteRecharge={handleDeleteRecharge}
+          staffOptions={staffOptions}
         />
       )}
     </div>

@@ -2,6 +2,7 @@ import { ObjectId } from 'mongodb';
 import { getDb } from './_lib/mongodb.js';
 import { handleApiError, methodNotAllowed, readJsonBody, sendJson } from './_lib/http.js';
 import { mapRecharge } from './_lib/mappers.js';
+import { recalculateStoreStatus } from './_lib/store-status.js';
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
@@ -75,5 +76,41 @@ export default async function handler(req, res) {
     return;
   }
 
-  methodNotAllowed(res, ['GET', 'POST']);
+  if (req.method === 'DELETE') {
+    try {
+      const id = typeof req.query.id === 'string' ? req.query.id.trim() : '';
+      if (!id) {
+        sendJson(res, 400, { message: '缺少必填字段：id' });
+        return;
+      }
+
+      if (!ObjectId.isValid(id)) {
+        sendJson(res, 400, { message: 'id 格式不正确' });
+        return;
+      }
+
+      const db = await getDb();
+      const rechargeObjectId = new ObjectId(id);
+      const existingRecharge = await db.collection('recharges').findOne({ _id: rechargeObjectId });
+
+      if (!existingRecharge) {
+        sendJson(res, 404, { message: '充值记录不存在' });
+        return;
+      }
+
+      await db.collection('recharges').deleteOne({ _id: rechargeObjectId });
+      const storeStatus = await recalculateStoreStatus(db, existingRecharge.storeId, new Date());
+
+      sendJson(res, 200, {
+        id,
+        storeId: existingRecharge.storeId,
+        storeStatus: storeStatus || '待跟进',
+      });
+    } catch (error) {
+      handleApiError(res, error);
+    }
+    return;
+  }
+
+  methodNotAllowed(res, ['GET', 'POST', 'DELETE']);
 }

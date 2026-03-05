@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Search, ChevronRight, Store as StoreIcon } from 'lucide-react';
 import { storeApi } from '../api';
-import { Store } from '../types';
+import { FollowUp, Recharge, Store } from '../types';
 import StoreListPagination from './StoreListPagination';
 
 const PAGE_SIZE = 10;
@@ -9,9 +9,16 @@ const PAGE_SIZE = 10;
 interface StoreListProps {
   onSelectStore: (store: Store) => void;
   refreshKey: number;
+  followUps: FollowUp[];
+  recharges: Recharge[];
 }
 
-export default function StoreList({ onSelectStore, refreshKey }: StoreListProps) {
+export default function StoreList({
+  onSelectStore,
+  refreshKey,
+  followUps,
+  recharges,
+}: StoreListProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [filterPlatform, setFilterPlatform] = useState<string>('全部');
@@ -22,6 +29,26 @@ export default function StoreList({ onSelectStore, refreshKey }: StoreListProps)
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  const latestFollowUpStaffMap = useMemo(() => {
+    const map = new Map<string, string>();
+    followUps.forEach((record) => {
+      if (!map.has(record.storeId) && record.staffName) {
+        map.set(record.storeId, record.staffName);
+      }
+    });
+    return map;
+  }, [followUps]);
+
+  const latestRechargeStaffMap = useMemo(() => {
+    const map = new Map<string, string>();
+    recharges.forEach((record) => {
+      if (!map.has(record.storeId) && record.staffName) {
+        map.set(record.storeId, record.staffName);
+      }
+    });
+    return map;
+  }, [recharges]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -121,23 +148,26 @@ export default function StoreList({ onSelectStore, refreshKey }: StoreListProps)
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-sm font-medium text-slate-500">
+                <th className="px-6 py-4">店铺ID</th>
                 <th className="px-6 py-4">店铺名称</th>
                 <th className="px-6 py-4">平台</th>
                 <th className="px-6 py-4">开单日期</th>
                 <th className="px-6 py-4">状态</th>
+                <th className="px-6 py-4">最近跟进售后</th>
+                <th className="px-6 py-4">最近充值售后</th>
                 <th className="px-6 py-4 text-right">操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
               {errorMessage ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-red-600">
+                  <td colSpan={8} className="px-6 py-12 text-center text-red-600">
                     {errorMessage}
                   </td>
                 </tr>
               ) : isLoading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
+                  <td colSpan={8} className="px-6 py-12 text-center text-slate-500">
                     正在加载店铺数据...
                   </td>
                 </tr>
@@ -148,6 +178,7 @@ export default function StoreList({ onSelectStore, refreshKey }: StoreListProps)
                     onClick={() => onSelectStore(store)}
                     className="hover:bg-slate-50 transition-colors cursor-pointer group"
                   >
+                    <td className="px-6 py-4 text-slate-600 font-mono text-xs">{store.storeCode}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
@@ -175,6 +206,12 @@ export default function StoreList({ onSelectStore, refreshKey }: StoreListProps)
                         {store.status}
                       </span>
                     </td>
+                    <td className="px-6 py-4 text-slate-600">
+                      {latestFollowUpStaffMap.get(store.id) || '-'}
+                    </td>
+                    <td className="px-6 py-4 text-slate-600">
+                      {latestRechargeStaffMap.get(store.id) || '-'}
+                    </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end text-slate-400 group-hover:text-emerald-600 transition-colors">
                         <span className="text-sm mr-1">详情</span>
@@ -185,7 +222,7 @@ export default function StoreList({ onSelectStore, refreshKey }: StoreListProps)
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
+                  <td colSpan={8} className="px-6 py-12 text-center text-slate-500">
                     没有找到符合条件的店铺
                   </td>
                 </tr>

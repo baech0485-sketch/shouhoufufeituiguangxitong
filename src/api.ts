@@ -1,4 +1,4 @@
-import { FollowUp, Recharge, Store } from './types';
+import { FollowUp, Recharge, Store, StoreStatus } from './types';
 
 interface ApiErrorPayload {
   message?: string;
@@ -18,6 +18,12 @@ export interface StoreListResponse {
   pageSize: number;
   total: number;
   totalPages: number;
+}
+
+export interface DeleteRecordResponse {
+  id: string;
+  storeId: string;
+  storeStatus: StoreStatus;
 }
 
 async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
@@ -68,7 +74,7 @@ export const storeApi = {
     const url = queryString ? `/api/stores?${queryString}` : '/api/stores';
     return requestJson<StoreListResponse>(url);
   },
-  create(payload: Omit<Store, 'id' | 'status'>) {
+  create(payload: Omit<Store, 'id' | 'status' | 'storeCode'>) {
     return requestJson<Store>('/api/stores', {
       method: 'POST',
       body: JSON.stringify(payload),
@@ -87,6 +93,12 @@ export const followUpApi = {
       body: JSON.stringify(payload),
     });
   },
+  remove(id: string) {
+    const query = `?id=${encodeURIComponent(id)}`;
+    return requestJson<DeleteRecordResponse>(`/api/followups${query}`, {
+      method: 'DELETE',
+    });
+  },
 };
 
 export const rechargeApi = {
@@ -98,6 +110,12 @@ export const rechargeApi = {
     return requestJson<Recharge>('/api/recharges', {
       method: 'POST',
       body: JSON.stringify(payload),
+    });
+  },
+  remove(id: string) {
+    const query = `?id=${encodeURIComponent(id)}`;
+    return requestJson<DeleteRecordResponse>(`/api/recharges${query}`, {
+      method: 'DELETE',
     });
   },
 };

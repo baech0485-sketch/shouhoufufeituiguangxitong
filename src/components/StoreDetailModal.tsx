@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Store, FollowUp, Recharge, CommunicationType, Intention } from '../types';
-import { X, MessageCircle, DollarSign, Upload, Plus, Calendar, User } from 'lucide-react';
+import { X, MessageCircle, DollarSign, Upload, Plus, Calendar, User, Trash2 } from 'lucide-react';
 
 interface StoreDetailModalProps {
   store: Store;
@@ -9,6 +9,9 @@ interface StoreDetailModalProps {
   onClose: () => void;
   onAddFollowUp: (followUp: Omit<FollowUp, 'id'>) => void;
   onAddRecharge: (recharge: Omit<Recharge, 'id'>) => void;
+  onDeleteFollowUp: (followUpId: string) => Promise<void>;
+  onDeleteRecharge: (rechargeId: string) => Promise<void>;
+  staffOptions: string[];
 }
 
 export default function StoreDetailModal({
@@ -18,6 +21,9 @@ export default function StoreDetailModal({
   onClose,
   onAddFollowUp,
   onAddRecharge,
+  onDeleteFollowUp,
+  onDeleteRecharge,
+  staffOptions,
 }: StoreDetailModalProps) {
   const [activeTab, setActiveTab] = useState<'followUp' | 'recharge'>('followUp');
   
@@ -25,17 +31,28 @@ export default function StoreDetailModal({
   const [commType, setCommType] = useState<CommunicationType>('私聊');
   const [intention, setIntention] = useState<Intention>('未知');
   const [notes, setNotes] = useState('');
-  const [staffName, setStaffName] = useState('');
+  const [staffName, setStaffName] = useState(staffOptions[0] || '');
 
   // Recharge Form State
   const [amount, setAmount] = useState('');
   const [rechargeDate, setRechargeDate] = useState(new Date().toISOString().split('T')[0]);
   const [screenshot, setScreenshot] = useState('');
-  const [rechargeStaff, setRechargeStaff] = useState('');
+  const [rechargeStaff, setRechargeStaff] = useState(staffOptions[0] || '');
+  const [deletingFollowUpId, setDeletingFollowUpId] = useState('');
+  const [deletingRechargeId, setDeletingRechargeId] = useState('');
+
+  useEffect(() => {
+    if (!staffName && staffOptions.length > 0) {
+      setStaffName(staffOptions[0]);
+    }
+    if (!rechargeStaff && staffOptions.length > 0) {
+      setRechargeStaff(staffOptions[0]);
+    }
+  }, [staffOptions, staffName, rechargeStaff]);
 
   const handleAddFollowUp = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!staffName.trim()) return;
+    if (!staffName) return;
     
     onAddFollowUp({
       storeId: store.id,
@@ -52,7 +69,7 @@ export default function StoreDetailModal({
 
   const handleAddRecharge = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!amount || !rechargeStaff.trim()) return;
+    if (!amount || !rechargeStaff) return;
     
     onAddRecharge({
       storeId: store.id,
@@ -64,6 +81,38 @@ export default function StoreDetailModal({
     
     setAmount('');
     setScreenshot('');
+  };
+
+  const handleDeleteFollowUp = async (followUpId: string) => {
+    const shouldDelete = window.confirm('确认删除这条跟进记录吗？删除后无法恢复。');
+    if (!shouldDelete) {
+      return;
+    }
+
+    setDeletingFollowUpId(followUpId);
+    try {
+      await onDeleteFollowUp(followUpId);
+    } catch {
+      // 错误提示由上层统一展示
+    } finally {
+      setDeletingFollowUpId('');
+    }
+  };
+
+  const handleDeleteRecharge = async (rechargeId: string) => {
+    const shouldDelete = window.confirm('确认删除这条充值记录吗？删除后无法恢复。');
+    if (!shouldDelete) {
+      return;
+    }
+
+    setDeletingRechargeId(rechargeId);
+    try {
+      await onDeleteRecharge(rechargeId);
+    } catch {
+      // 错误提示由上层统一展示
+    } finally {
+      setDeletingRechargeId('');
+    }
   };
 
   return (
@@ -129,9 +178,20 @@ export default function StoreDetailModal({
                           <User size={16} className="text-slate-400" />
                           <span>{record.staffName}</span>
                         </div>
-                        <div className="flex items-center space-x-1 text-xs text-slate-500">
-                          <Calendar size={14} />
-                          <span>{record.date}</span>
+                        <div className="flex items-center space-x-3">
+                          <div className="flex items-center space-x-1 text-xs text-slate-500">
+                            <Calendar size={14} />
+                            <span>{record.date}</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => void handleDeleteFollowUp(record.id)}
+                            disabled={deletingFollowUpId === record.id}
+                            className="inline-flex items-center space-x-1 text-xs text-red-600 hover:text-red-700 disabled:text-slate-400 disabled:cursor-not-allowed"
+                          >
+                            <Trash2 size={14} />
+                            <span>{deletingFollowUpId === record.id ? '删除中' : '删除'}</span>
+                          </button>
                         </div>
                       </div>
                       <div className="flex space-x-2 mb-3">
@@ -164,9 +224,20 @@ export default function StoreDetailModal({
                           <User size={16} className="text-slate-400" />
                           <span>{record.staffName}</span>
                         </div>
-                        <div className="flex items-center space-x-1 text-xs text-slate-500">
-                          <Calendar size={14} />
-                          <span>{record.date}</span>
+                        <div className="flex items-center space-x-3">
+                          <div className="flex items-center space-x-1 text-xs text-slate-500">
+                            <Calendar size={14} />
+                            <span>{record.date}</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => void handleDeleteRecharge(record.id)}
+                            disabled={deletingRechargeId === record.id}
+                            className="inline-flex items-center space-x-1 text-xs text-red-600 hover:text-red-700 disabled:text-slate-400 disabled:cursor-not-allowed"
+                          >
+                            <Trash2 size={14} />
+                            <span>{deletingRechargeId === record.id ? '删除中' : '删除'}</span>
+                          </button>
                         </div>
                       </div>
                       <div className="flex items-baseline space-x-1 mb-3">
@@ -227,14 +298,18 @@ export default function StoreDetailModal({
                     
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-1">售后人员</label>
-                      <input
-                        type="text"
+                      <select
                         value={staffName}
                         onChange={(e) => setStaffName(e.target.value)}
-                        placeholder="请输入您的姓名"
                         className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none"
                         required
-                      />
+                      >
+                        {staffOptions.map((option) => (
+                          <option key={`followup-${option}`} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
                     </div>
 
                     <div>
@@ -291,14 +366,18 @@ export default function StoreDetailModal({
                     
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-1">售后人员</label>
-                      <input
-                        type="text"
+                      <select
                         value={rechargeStaff}
                         onChange={(e) => setRechargeStaff(e.target.value)}
-                        placeholder="请输入您的姓名"
                         className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none"
                         required
-                      />
+                      >
+                        {staffOptions.map((option) => (
+                          <option key={`recharge-${option}`} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
                     </div>
 
                     <div>

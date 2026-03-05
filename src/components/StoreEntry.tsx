@@ -3,7 +3,7 @@ import { Store, Platform } from '../types';
 import { Save, CheckCircle2 } from 'lucide-react';
 
 interface StoreEntryProps {
-  onAddStore: (store: Omit<Store, 'id' | 'status'>) => void;
+  onAddStore: (store: Omit<Store, 'id' | 'status' | 'storeCode'>) => void;
 }
 
 export default function StoreEntry({ onAddStore }: StoreEntryProps) {

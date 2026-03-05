@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Store as StoreIcon, List } from 'lucide-react';
+import { LayoutDashboard, List } from 'lucide-react';
 import { ViewState } from '../types';
 
 interface SidebarProps {
@@ -10,7 +10,6 @@ interface SidebarProps {
 export default function Sidebar({ currentView, onChangeView }: SidebarProps) {
   const navItems = [
     { id: 'dashboard' as ViewState, label: '数据看板', icon: LayoutDashboard },
-    { id: 'entry' as ViewState, label: '店铺录入', icon: StoreIcon },
     { id: 'list' as ViewState, label: '店铺列表', icon: List },
   ];
 
