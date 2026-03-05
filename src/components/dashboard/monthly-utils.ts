@@ -9,7 +9,9 @@ export interface DailyTrendItem {
 export interface StaffPerformanceItem {
   name: string;
   amount: number;
-  followUps: number;
+  followedStores: number;
+  rechargedStores: number;
+  conversionRate: number;
 }
 
 export function getMonthKey(dateText: string) {
@@ -65,21 +67,54 @@ export function buildStaffPerformance(
   monthlyRecharges: Recharge[],
   monthlyFollowUps: FollowUp[],
 ): StaffPerformanceItem[] {
-  const data: Record<string, StaffPerformanceItem> = {};
+  const data: Record<
+    string,
+    {
+      name: string;
+      amount: number;
+      followedStoreIds: Set<string>;
+      rechargedStoreIds: Set<string>;
+    }
+  > = {};
 
   monthlyRecharges.forEach((item) => {
     if (!data[item.staffName]) {
-      data[item.staffName] = { name: item.staffName, amount: 0, followUps: 0 };
+      data[item.staffName] = {
+        name: item.staffName,
+        amount: 0,
+        followedStoreIds: new Set<string>(),
+        rechargedStoreIds: new Set<string>(),
+      };
     }
     data[item.staffName].amount += item.amount;
+    data[item.staffName].rechargedStoreIds.add(item.storeId);
   });
 
   monthlyFollowUps.forEach((item) => {
     if (!data[item.staffName]) {
-      data[item.staffName] = { name: item.staffName, amount: 0, followUps: 0 };
+      data[item.staffName] = {
+        name: item.staffName,
+        amount: 0,
+        followedStoreIds: new Set<string>(),
+        rechargedStoreIds: new Set<string>(),
+      };
     }
-    data[item.staffName].followUps += 1;
+    data[item.staffName].followedStoreIds.add(item.storeId);
   });
 
-  return Object.values(data).sort((a, b) => b.amount - a.amount);
+  return Object.values(data)
+    .map((item) => {
+      const followedStores = item.followedStoreIds.size;
+      const rechargedStores = item.rechargedStoreIds.size;
+      const conversionRate =
+        followedStores > 0 ? Number(((rechargedStores / followedStores) * 100).toFixed(1)) : 0;
+      return {
+        name: item.name,
+        amount: item.amount,
+        followedStores,
+        rechargedStores,
+        conversionRate,
+      };
+    })
+    .sort((a, b) => b.amount - a.amount);
 }
