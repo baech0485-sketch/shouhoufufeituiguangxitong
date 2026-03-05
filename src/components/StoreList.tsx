@@ -40,12 +40,11 @@ export default function StoreList({
     return map;
   }, [followUps]);
 
-  const latestRechargeStaffMap = useMemo(() => {
-    const map = new Map<string, string>();
+  const totalRechargeAmountMap = useMemo(() => {
+    const map = new Map<string, number>();
     recharges.forEach((record) => {
-      if (!map.has(record.storeId) && record.staffName) {
-        map.set(record.storeId, record.staffName);
-      }
+      const currentAmount = map.get(record.storeId) || 0;
+      map.set(record.storeId, currentAmount + record.amount);
     });
     return map;
   }, [recharges]);
@@ -153,8 +152,8 @@ export default function StoreList({
                 <th className="px-6 py-4">平台</th>
                 <th className="px-6 py-4">开单日期</th>
                 <th className="px-6 py-4">状态</th>
-                <th className="px-6 py-4">最近跟进售后</th>
-                <th className="px-6 py-4">最近充值售后</th>
+                <th className="px-6 py-4">售后</th>
+                <th className="px-6 py-4">充值金额</th>
                 <th className="px-6 py-4 text-right">操作</th>
               </tr>
             </thead>
@@ -210,7 +209,9 @@ export default function StoreList({
                       {latestFollowUpStaffMap.get(store.id) || '-'}
                     </td>
                     <td className="px-6 py-4 text-slate-600">
-                      {latestRechargeStaffMap.get(store.id) || '-'}
+                      {totalRechargeAmountMap.has(store.id)
+                        ? `¥${totalRechargeAmountMap.get(store.id)?.toFixed(2)}`
+                        : '-'}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end text-slate-400 group-hover:text-emerald-600 transition-colors">
