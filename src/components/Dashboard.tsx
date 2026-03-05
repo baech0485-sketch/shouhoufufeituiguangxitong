@@ -48,7 +48,7 @@ export default function Dashboard({ recharges, followUps }: DashboardProps) {
       : '0.0';
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="mx-auto w-full max-w-[1680px] space-y-6">
       <div className="mb-8 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-slate-900">数据看板</h2>

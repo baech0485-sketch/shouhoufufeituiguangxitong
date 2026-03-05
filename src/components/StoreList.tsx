@@ -95,6 +95,19 @@ export default function StoreList({
   const start = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
   const end = total === 0 ? 0 : start + stores.length - 1;
 
+  const getPlatformBadgeClass = (platform: string) => {
+    if (platform === '美团餐饮') {
+      return 'bg-amber-100 text-amber-800 border border-amber-200';
+    }
+    if (platform === '饿了么餐饮') {
+      return 'bg-emerald-100 text-emerald-800 border border-emerald-200';
+    }
+    if (platform === '美团外卖') {
+      return 'bg-orange-100 text-orange-800 border border-orange-200';
+    }
+    return 'bg-slate-100 text-slate-700 border border-slate-200';
+  };
+
   return (
     <div className="mx-auto w-full max-w-[1680px]">
       <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -187,9 +200,7 @@ export default function StoreList({
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                        store.platform.includes('美团') ? 'bg-yellow-100 text-yellow-800' : 'bg-orange-100 text-orange-800'
-                      }`}>
+                      <span className={`inline-flex items-center px-3 py-1 rounded-md text-xs font-medium ${getPlatformBadgeClass(store.platform)}`}>
                         {store.platform}
                       </span>
                     </td>
