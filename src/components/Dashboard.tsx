@@ -6,12 +6,11 @@ import StaffPerformanceTable from './dashboard/StaffPerformanceTable';
 import { buildDailyTrendData, buildStaffPerformance, getAvailableMonths, getMonthKey } from './dashboard/monthly-utils';
 
 interface DashboardProps {
-  totalStores: number;
   recharges: Recharge[];
   followUps: FollowUp[];
 }
 
-export default function Dashboard({ totalStores, recharges, followUps }: DashboardProps) {
+export default function Dashboard({ recharges, followUps }: DashboardProps) {
   const availableMonths = useMemo(() => getAvailableMonths(recharges), [recharges]);
   const [selectedMonth, setSelectedMonth] = useState('');
 
@@ -42,8 +41,11 @@ export default function Dashboard({ totalStores, recharges, followUps }: Dashboa
 
   const monthlyRechargeAmount = monthlyRecharges.reduce((sum, item) => sum + item.amount, 0);
   const monthlyRechargedStoresCount = new Set(monthlyRecharges.map((item) => item.storeId)).size;
+  const monthlyFollowedStoresCount = new Set(monthlyFollowUps.map((item) => item.storeId)).size;
   const monthlyConversionRate =
-    totalStores > 0 ? ((monthlyRechargedStoresCount / totalStores) * 100).toFixed(1) : '0.0';
+    monthlyFollowedStoresCount > 0
+      ? ((monthlyRechargedStoresCount / monthlyFollowedStoresCount) * 100).toFixed(1)
+      : '0.0';
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -77,8 +79,8 @@ export default function Dashboard({ totalStores, recharges, followUps }: Dashboa
             <StoreIcon size={24} />
           </div>
           <div>
-            <p className="text-sm font-medium text-slate-500">累计录入店铺</p>
-            <p className="text-2xl font-bold text-slate-900">{totalStores}</p>
+            <p className="text-sm font-medium text-slate-500">当月跟进店铺数</p>
+            <p className="text-2xl font-bold text-slate-900">{monthlyFollowedStoresCount}</p>
           </div>
         </div>
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center space-x-4">

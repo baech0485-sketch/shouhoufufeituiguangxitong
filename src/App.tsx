@@ -9,7 +9,6 @@ import { followUpApi, rechargeApi, storeApi } from './api';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<ViewState>('dashboard');
-  const [totalStores, setTotalStores] = useState(0);
   const [followUps, setFollowUps] = useState<FollowUp[]>([]);
   const [recharges, setRecharges] = useState<Recharge[]>([]);
   const [selectedStore, setSelectedStore] = useState<Store | null>(null);
@@ -22,12 +21,10 @@ export default function App() {
       setIsLoading(true);
       setErrorMessage('');
       try {
-        const [storeData, followUpData, rechargeData] = await Promise.all([
-          storeApi.list({ page: 1, pageSize: 1 }),
+        const [followUpData, rechargeData] = await Promise.all([
           followUpApi.list(),
           rechargeApi.list(),
         ]);
-        setTotalStores(storeData.total);
         setFollowUps(followUpData);
         setRecharges(rechargeData);
       } catch (error) {
@@ -46,7 +43,6 @@ export default function App() {
     void (async () => {
       try {
         await storeApi.create(newStore);
-        setTotalStores((prevTotal) => prevTotal + 1);
         setStoreListRefreshKey((prevKey) => prevKey + 1);
       } catch (error) {
         const message = error instanceof Error ? error.message : '新增店铺失败';
@@ -109,7 +105,7 @@ export default function App() {
           </div>
         )}
         {currentView === 'dashboard' && (
-          <Dashboard totalStores={totalStores} recharges={recharges} followUps={followUps} />
+          <Dashboard recharges={recharges} followUps={followUps} />
         )}
         {currentView === 'entry' && (
           <StoreEntry onAddStore={handleAddStore} />
