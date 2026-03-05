@@ -8,9 +8,11 @@
     "build": "vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "import:stores": "node scripts/import-stores-from-xlsx.mjs"
   },
   "dependencies": {
+    "exceljs": "^4.4.0",
     "mongodb": "^6.20.0",
     "lucide-react": "^0.546.0",
     "react": "^19.0.0",

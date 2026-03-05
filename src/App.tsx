@@ -9,10 +9,11 @@ import { followUpApi, rechargeApi, storeApi } from './api';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<ViewState>('dashboard');
-  const [stores, setStores] = useState<Store[]>([]);
+  const [totalStores, setTotalStores] = useState(0);
   const [followUps, setFollowUps] = useState<FollowUp[]>([]);
   const [recharges, setRecharges] = useState<Recharge[]>([]);
   const [selectedStore, setSelectedStore] = useState<Store | null>(null);
+  const [storeListRefreshKey, setStoreListRefreshKey] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -22,11 +23,11 @@ export default function App() {
       setErrorMessage('');
       try {
         const [storeData, followUpData, rechargeData] = await Promise.all([
-          storeApi.list(),
+          storeApi.list({ page: 1, pageSize: 1 }),
           followUpApi.list(),
           rechargeApi.list(),
         ]);
-        setStores(storeData);
+        setTotalStores(storeData.total);
         setFollowUps(followUpData);
         setRecharges(rechargeData);
       } catch (error) {
@@ -44,8 +45,9 @@ export default function App() {
     setErrorMessage('');
     void (async () => {
       try {
-        const createdStore = await storeApi.create(newStore);
-        setStores((prevStores) => [createdStore, ...prevStores]);
+        await storeApi.create(newStore);
+        setTotalStores((prevTotal) => prevTotal + 1);
+        setStoreListRefreshKey((prevKey) => prevKey + 1);
       } catch (error) {
         const message = error instanceof Error ? error.message : '新增店铺失败';
         setErrorMessage(message);
@@ -59,14 +61,7 @@ export default function App() {
       try {
         const createdFollowUp = await followUpApi.create(newFollowUp);
         setFollowUps((prevFollowUps) => [createdFollowUp, ...prevFollowUps]);
-        setStores((prevStores) =>
-          prevStores.map((store) => {
-            if (store.id === newFollowUp.storeId && store.status === '待跟进') {
-              return { ...store, status: '已跟进' };
-            }
-            return store;
-          }),
-        );
+        setStoreListRefreshKey((prevKey) => prevKey + 1);
         setSelectedStore((prevStore) =>
           prevStore && prevStore.id === newFollowUp.storeId && prevStore.status === '待跟进'
             ? { ...prevStore, status: '已跟进' }
@@ -85,14 +80,7 @@ export default function App() {
       try {
         const createdRecharge = await rechargeApi.create(newRecharge);
         setRecharges((prevRecharges) => [createdRecharge, ...prevRecharges]);
-        setStores((prevStores) =>
-          prevStores.map((store) => {
-            if (store.id === newRecharge.storeId) {
-              return { ...store, status: '已充值' };
-            }
-            return store;
-          }),
-        );
+        setStoreListRefreshKey((prevKey) => prevKey + 1);
         setSelectedStore((prevStore) =>
           prevStore && prevStore.id === newRecharge.storeId
             ? { ...prevStore, status: '已充值' }
@@ -121,13 +109,16 @@ export default function App() {
           </div>
         )}
         {currentView === 'dashboard' && (
-          <Dashboard stores={stores} recharges={recharges} followUps={followUps} />
+          <Dashboard totalStores={totalStores} recharges={recharges} followUps={followUps} />
         )}
         {currentView === 'entry' && (
           <StoreEntry onAddStore={handleAddStore} />
         )}
         {currentView === 'list' && (
-          <StoreList stores={stores} onSelectStore={setSelectedStore} />
+          <StoreList
+            onSelectStore={setSelectedStore}
+            refreshKey={storeListRefreshKey}
+          />
         )}
       </main>
 

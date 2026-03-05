@@ -4,6 +4,22 @@ interface ApiErrorPayload {
   message?: string;
 }
 
+export interface StoreListQuery {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  platform?: string;
+  status?: string;
+}
+
+export interface StoreListResponse {
+  items: Store[];
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+}
+
 async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, {
     ...init,
@@ -30,8 +46,27 @@ async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
 }
 
 export const storeApi = {
-  list() {
-    return requestJson<Store[]>('/api/stores');
+  list(query: StoreListQuery = {}) {
+    const params = new URLSearchParams();
+    if (query.page) {
+      params.set('page', String(query.page));
+    }
+    if (query.pageSize) {
+      params.set('pageSize', String(query.pageSize));
+    }
+    if (query.search) {
+      params.set('search', query.search);
+    }
+    if (query.platform) {
+      params.set('platform', query.platform);
+    }
+    if (query.status) {
+      params.set('status', query.status);
+    }
+
+    const queryString = params.toString();
+    const url = queryString ? `/api/stores?${queryString}` : '/api/stores';
+    return requestJson<StoreListResponse>(url);
   },
   create(payload: Omit<Store, 'id' | 'status'>) {
     return requestJson<Store>('/api/stores', {

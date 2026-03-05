@@ -8,7 +8,7 @@ interface StoreEntryProps {
 
 export default function StoreEntry({ onAddStore }: StoreEntryProps) {
   const [name, setName] = useState('');
-  const [platform, setPlatform] = useState<Platform>('美团外卖');
+  const [platform, setPlatform] = useState<Platform>('美团餐饮');
   const [openDate, setOpenDate] = useState(new Date().toISOString().split('T')[0]);
   const [showSuccess, setShowSuccess] = useState(false);
 
@@ -31,7 +31,7 @@ export default function StoreEntry({ onAddStore }: StoreEntryProps) {
     <div className="max-w-2xl mx-auto">
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-slate-900">每日开单店铺录入</h2>
-        <p className="text-slate-500 mt-1">录入美团外卖和淘宝闪购的新开店铺信息</p>
+        <p className="text-slate-500 mt-1">录入新开店铺并同步到云数据库</p>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 md:p-8">
@@ -56,7 +56,7 @@ export default function StoreEntry({ onAddStore }: StoreEntryProps) {
               所属平台
             </label>
             <div className="grid grid-cols-2 gap-4">
-              {(['美团外卖', '淘宝闪购'] as Platform[]).map((p) => (
+              {(['美团餐饮', '饿了么餐饮', '美团外卖', '淘宝闪购'] as Platform[]).map((p) => (
                 <button
                   key={p}
                   type="button"

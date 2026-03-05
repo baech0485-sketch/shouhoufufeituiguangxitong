@@ -2,12 +2,59 @@ import { getDb } from './_lib/mongodb.js';
 import { handleApiError, methodNotAllowed, readJsonBody, sendJson } from './_lib/http.js';
 import { mapStore } from './_lib/mappers.js';
 
+function parsePositiveInt(value, defaultValue, maxValue = Number.MAX_SAFE_INTEGER) {
+  const parsed = Number.parseInt(String(value ?? ''), 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return defaultValue;
+  }
+  return Math.min(parsed, maxValue);
+}
+
+function escapeRegex(input) {
+  return input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 export default async function handler(req, res) {
   if (req.method === 'GET') {
     try {
       const db = await getDb();
-      const stores = await db.collection('stores').find({}).sort({ createdAt: -1 }).toArray();
-      sendJson(res, 200, stores.map(mapStore));
+      const page = parsePositiveInt(req.query.page, 1);
+      const pageSize = parsePositiveInt(req.query.pageSize, 10, 100);
+      const search = typeof req.query.search === 'string' ? req.query.search.trim() : '';
+      const platform = typeof req.query.platform === 'string' ? req.query.platform.trim() : '';
+      const status = typeof req.query.status === 'string' ? req.query.status.trim() : '';
+
+      const query = {};
+      if (search) {
+        query.name = { $regex: escapeRegex(search), $options: 'i' };
+      }
+      if (platform) {
+        query.platform = platform;
+      }
+      if (status) {
+        query.status = status;
+      }
+
+      const skip = (page - 1) * pageSize;
+      const [stores, total] = await Promise.all([
+        db
+          .collection('stores')
+          .find(query)
+          .sort({ openDate: -1, updatedAt: -1, createdAt: -1 })
+          .skip(skip)
+          .limit(pageSize)
+          .toArray(),
+        db.collection('stores').countDocuments(query),
+      ]);
+
+      const totalPages = Math.max(1, Math.ceil(total / pageSize));
+      sendJson(res, 200, {
+        items: stores.map(mapStore),
+        page,
+        pageSize,
+        total,
+        totalPages,
+      });
     } catch (error) {
       handleApiError(res, error);
     }

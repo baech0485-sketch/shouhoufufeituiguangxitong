@@ -36,6 +36,20 @@ npm run dev
 vercel dev
 ```
 
+## Excel 批量导入
+
+导入默认文件 `店铺全部数据-20260305.xlsx`：
+
+```bash
+npm run import:stores
+```
+
+导入指定文件：
+
+```bash
+node scripts/import-stores-from-xlsx.mjs "你的Excel路径.xlsx"
+```
+
 ## 部署到 Vercel
 
 在 Vercel 项目设置中新增环境变量：
@@ -47,7 +61,7 @@ vercel dev
 
 ## API 概览
 
-- `GET /api/stores`：获取店铺列表
+- `GET /api/stores`：获取店铺分页列表（支持 `page`、`pageSize`、`search`、`platform`、`status`）
 - `POST /api/stores`：新增店铺
 - `GET /api/followups?storeId=xxx`：获取跟进记录（可按店铺过滤）
 - `POST /api/followups`：新增跟进记录，并自动更新店铺状态

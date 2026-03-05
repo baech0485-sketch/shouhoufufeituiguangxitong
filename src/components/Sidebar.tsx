@@ -11,7 +11,7 @@ export default function Sidebar({ currentView, onChangeView }: SidebarProps) {
   const navItems = [
     { id: 'dashboard' as ViewState, label: '数据看板', icon: LayoutDashboard },
     { id: 'entry' as ViewState, label: '店铺录入', icon: StoreIcon },
-    { id: 'list' as ViewState, label: '店铺查询与跟进', icon: List },
+    { id: 'list' as ViewState, label: '店铺列表', icon: List },
   ];
 
   return (

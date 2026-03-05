@@ -1,30 +1,80 @@
-import React, { useState } from 'react';
-import { Store } from '../types';
+import React, { useEffect, useState } from 'react';
 import { Search, ChevronRight, Store as StoreIcon } from 'lucide-react';
+import { storeApi } from '../api';
+import { Store } from '../types';
+import StoreListPagination from './StoreListPagination';
+
+const PAGE_SIZE = 10;
 
 interface StoreListProps {
-  stores: Store[];
   onSelectStore: (store: Store) => void;
+  refreshKey: number;
 }
 
-export default function StoreList({ stores, onSelectStore }: StoreListProps) {
+export default function StoreList({ onSelectStore, refreshKey }: StoreListProps) {
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [filterPlatform, setFilterPlatform] = useState<string>('全部');
   const [filterStatus, setFilterStatus] = useState<string>('全部');
+  const [page, setPage] = useState(1);
+  const [stores, setStores] = useState<Store[]>([]);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const filteredStores = stores.filter((store) => {
-    const matchesSearch = store.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesPlatform = filterPlatform === '全部' || store.platform === filterPlatform;
-    const matchesStatus = filterStatus === '全部' || store.status === filterStatus;
-    return matchesSearch && matchesPlatform && matchesStatus;
-  });
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm.trim());
+      setPage(1);
+    }, 300);
+    return () => window.clearTimeout(timer);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [filterPlatform, filterStatus]);
+
+  useEffect(() => {
+    const fetchStores = async () => {
+      setIsLoading(true);
+      setErrorMessage('');
+      try {
+        const response = await storeApi.list({
+          page,
+          pageSize: PAGE_SIZE,
+          search: debouncedSearchTerm || undefined,
+          platform: filterPlatform === '全部' ? undefined : filterPlatform,
+          status: filterStatus === '全部' ? undefined : filterStatus,
+        });
+
+        setStores(response.items);
+        setTotal(response.total);
+        setTotalPages(response.totalPages);
+
+        if (page > response.totalPages && response.totalPages > 0) {
+          setPage(response.totalPages);
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : '加载店铺列表失败';
+        setErrorMessage(message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    void fetchStores();
+  }, [page, debouncedSearchTerm, filterPlatform, filterStatus, refreshKey]);
+
+  const start = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+  const end = total === 0 ? 0 : start + stores.length - 1;
 
   return (
     <div className="max-w-6xl mx-auto">
       <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">店铺查询与跟进</h2>
-          <p className="text-slate-500 mt-1">查询店铺信息，添加售后跟进记录及充值记录</p>
+          <h2 className="text-2xl font-bold text-slate-900">店铺列表</h2>
+          <p className="text-slate-500 mt-1">每页展示 10 条，翻页时才请求云数据库下一页数据</p>
         </div>
       </div>
 
@@ -40,18 +90,20 @@ export default function StoreList({ stores, onSelectStore }: StoreListProps) {
               className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
             />
           </div>
-          
+
           <div className="flex gap-4">
             <select
               value={filterPlatform}
               onChange={(e) => setFilterPlatform(e.target.value)}
-              className="px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none bg-white min-w-[120px]"
+              className="px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none bg-white min-w-[140px]"
             >
               <option value="全部">全部平台</option>
+              <option value="美团餐饮">美团餐饮</option>
+              <option value="饿了么餐饮">饿了么餐饮</option>
               <option value="美团外卖">美团外卖</option>
               <option value="淘宝闪购">淘宝闪购</option>
             </select>
-            
+
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
@@ -77,8 +129,20 @@ export default function StoreList({ stores, onSelectStore }: StoreListProps) {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
-              {filteredStores.length > 0 ? (
-                filteredStores.map((store) => (
+              {errorMessage ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-12 text-center text-red-600">
+                    {errorMessage}
+                  </td>
+                </tr>
+              ) : isLoading ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
+                    正在加载店铺数据...
+                  </td>
+                </tr>
+              ) : stores.length > 0 ? (
+                stores.map((store) => (
                   <tr
                     key={store.id}
                     onClick={() => onSelectStore(store)}
@@ -94,7 +158,7 @@ export default function StoreList({ stores, onSelectStore }: StoreListProps) {
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                        store.platform === '美团外卖' ? 'bg-yellow-100 text-yellow-800' : 'bg-orange-100 text-orange-800'
+                        store.platform.includes('美团') ? 'bg-yellow-100 text-yellow-800' : 'bg-orange-100 text-orange-800'
                       }`}>
                         {store.platform}
                       </span>
@@ -102,9 +166,11 @@ export default function StoreList({ stores, onSelectStore }: StoreListProps) {
                     <td className="px-6 py-4 text-slate-600">{store.openDate}</td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                        store.status === '待跟进' ? 'bg-slate-100 text-slate-700' :
-                        store.status === '已跟进' ? 'bg-blue-100 text-blue-700' :
-                        'bg-emerald-100 text-emerald-700'
+                        store.status === '待跟进'
+                          ? 'bg-slate-100 text-slate-700'
+                          : store.status === '已跟进'
+                            ? 'bg-blue-100 text-blue-700'
+                            : 'bg-emerald-100 text-emerald-700'
                       }`}>
                         {store.status}
                       </span>
@@ -127,6 +193,17 @@ export default function StoreList({ stores, onSelectStore }: StoreListProps) {
             </tbody>
           </table>
         </div>
+
+        <StoreListPagination
+          page={page}
+          totalPages={totalPages}
+          total={total}
+          start={start}
+          end={end}
+          isLoading={isLoading}
+          onPrevPage={() => setPage((prev) => Math.max(1, prev - 1))}
+          onNextPage={() => setPage((prev) => Math.min(Math.max(1, totalPages), prev + 1))}
+        />
       </div>
     </div>
   );

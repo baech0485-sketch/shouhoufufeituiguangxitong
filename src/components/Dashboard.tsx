@@ -1,17 +1,16 @@
 import React, { useMemo } from 'react';
-import { Store, Recharge, FollowUp } from '../types';
+import { Recharge, FollowUp } from '../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { TrendingUp, Users, DollarSign, Store as StoreIcon } from 'lucide-react';
 
 interface DashboardProps {
-  stores: Store[];
+  totalStores: number;
   recharges: Recharge[];
   followUps: FollowUp[];
 }
 
-export default function Dashboard({ stores, recharges, followUps }: DashboardProps) {
+export default function Dashboard({ totalStores, recharges, followUps }: DashboardProps) {
   // Calculate key metrics
-  const totalStores = stores.length;
   const totalRechargeAmount = recharges.reduce((sum, r) => sum + r.amount, 0);
   const rechargedStoresCount = new Set(recharges.map(r => r.storeId)).size;
   const conversionRate = totalStores > 0 ? ((rechargedStoresCount / totalStores) * 100).toFixed(1) : '0.0';
