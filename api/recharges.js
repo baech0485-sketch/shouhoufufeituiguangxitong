@@ -1,10 +1,20 @@
 import { ObjectId } from 'mongodb';
 import { getDb } from './_lib/mongodb.js';
+import { requireWriteAccess } from './_lib/auth.js';
 import { handleApiError, methodNotAllowed, readJsonBody, sendJson } from './_lib/http.js';
 import { mapRecharge } from './_lib/mappers.js';
 import { recalculateStoreStatus } from './_lib/store-status.js';
+import {
+  getTrimmedText,
+  parseNonNegativeAmount,
+  parseRequiredTextFields,
+} from './_lib/validation.js';
 
 export default async function handler(req, res) {
+  if (!requireWriteAccess(req, res)) {
+    return;
+  }
+
   if (req.method === 'GET') {
     try {
       const db = await getDb();
@@ -26,18 +36,20 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     try {
       const body = await readJsonBody(req);
-      const storeId = typeof body.storeId === 'string' ? body.storeId.trim() : '';
-      const date = typeof body.date === 'string' ? body.date.trim() : '';
-      const screenshotUrl =
-        typeof body.screenshotUrl === 'string' ? body.screenshotUrl.trim() : '';
-      const staffName = typeof body.staffName === 'string' ? body.staffName.trim() : '';
-      const amount =
-        typeof body.amount === 'number' ? body.amount : Number.parseFloat(String(body.amount));
-
-      if (!storeId || !date || !staffName || Number.isNaN(amount)) {
-        sendJson(res, 400, { message: '缺少必填字段：storeId/date/amount/staffName' });
+      const required = parseRequiredTextFields(body, ['storeId', 'date', 'staffName']);
+      if (!required.ok) {
+        sendJson(res, 400, {
+          message: `缺少必填字段：${required.missingFields.join('/')}`,
+        });
         return;
       }
+      const amount = parseNonNegativeAmount(body.amount);
+      if (amount === null) {
+        sendJson(res, 400, { message: 'amount 必须为非负数' });
+        return;
+      }
+      const { storeId, date, staffName } = required.values;
+      const screenshotUrl = getTrimmedText(body.screenshotUrl);
 
       if (!ObjectId.isValid(storeId)) {
         sendJson(res, 400, { message: 'storeId 格式不正确' });

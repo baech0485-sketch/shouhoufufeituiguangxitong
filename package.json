@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
+    "test": "node --test api/_tests/*.test.js",
     "import:stores": "node scripts/import-stores-from-xlsx.mjs"
   },
   "dependencies": {

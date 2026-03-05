@@ -22,6 +22,10 @@ npm install
 ```env
 MONGODB_URI="mongodb://root:your-password@dbconn.sealosbja.site:31728/?directConnection=true"
 MONGODB_DB="shouhoufufeituiguang"
+# 可选：配置后，POST/DELETE 写接口需携带 x-api-key 或 Bearer Token
+API_WRITE_KEY=""
+# 可选：前端自动附带的写密钥，需与 API_WRITE_KEY 一致（建议仅内网使用）
+VITE_API_WRITE_KEY=""
 ```
 
 3. 启动开发环境
@@ -67,3 +71,17 @@ node scripts/import-stores-from-xlsx.mjs "你的Excel路径.xlsx"
 - `POST /api/followups`：新增跟进记录，并自动更新店铺状态
 - `GET /api/recharges?storeId=xxx`：获取充值记录（可按店铺过滤）
 - `POST /api/recharges`：新增充值记录，并自动更新店铺状态
+
+## 写接口鉴权
+
+- 当未配置 `API_WRITE_KEY` 时，保持原行为（本地调试方便）。
+- 当配置 `API_WRITE_KEY` 时，所有 `POST/DELETE` 请求必须携带以下任一 Header：
+  - `x-api-key: <API_WRITE_KEY>`
+  - `Authorization: Bearer <API_WRITE_KEY>`
+- 前端页面会在存在 `VITE_API_WRITE_KEY` 时自动附带 `x-api-key`。
+
+## 运行后端校验测试
+
+```bash
+npm test
+```

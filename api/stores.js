@@ -1,6 +1,8 @@
 import { getDb } from './_lib/mongodb.js';
+import { requireWriteAccess } from './_lib/auth.js';
 import { handleApiError, methodNotAllowed, readJsonBody, sendJson } from './_lib/http.js';
 import { mapStore } from './_lib/mappers.js';
+import { parseRequiredTextFields } from './_lib/validation.js';
 
 function parsePositiveInt(value, defaultValue, maxValue = Number.MAX_SAFE_INTEGER) {
   const parsed = Number.parseInt(String(value ?? ''), 10);
@@ -15,6 +17,10 @@ function escapeRegex(input) {
 }
 
 export default async function handler(req, res) {
+  if (!requireWriteAccess(req, res)) {
+    return;
+  }
+
   if (req.method === 'GET') {
     try {
       const db = await getDb();
@@ -64,14 +70,14 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     try {
       const body = await readJsonBody(req);
-      const name = typeof body.name === 'string' ? body.name.trim() : '';
-      const platform = typeof body.platform === 'string' ? body.platform.trim() : '';
-      const openDate = typeof body.openDate === 'string' ? body.openDate.trim() : '';
-
-      if (!name || !platform || !openDate) {
-        sendJson(res, 400, { message: '缺少必填字段：name/platform/openDate' });
+      const required = parseRequiredTextFields(body, ['name', 'platform', 'openDate']);
+      if (!required.ok) {
+        sendJson(res, 400, {
+          message: `缺少必填字段：${required.missingFields.join('/')}`,
+        });
         return;
       }
+      const { name, platform, openDate } = required.values;
 
       const now = new Date();
       const storeDoc = {

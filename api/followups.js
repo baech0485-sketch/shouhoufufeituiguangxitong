@@ -1,10 +1,16 @@
 import { ObjectId } from 'mongodb';
 import { getDb } from './_lib/mongodb.js';
+import { requireWriteAccess } from './_lib/auth.js';
 import { handleApiError, methodNotAllowed, readJsonBody, sendJson } from './_lib/http.js';
 import { mapFollowUp } from './_lib/mappers.js';
 import { recalculateStoreStatus } from './_lib/store-status.js';
+import { getTrimmedText, parseRequiredTextFields } from './_lib/validation.js';
 
 export default async function handler(req, res) {
+  if (!requireWriteAccess(req, res)) {
+    return;
+  }
+
   if (req.method === 'GET') {
     try {
       const db = await getDb();
@@ -26,18 +32,21 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     try {
       const body = await readJsonBody(req);
-      const storeId = typeof body.storeId === 'string' ? body.storeId.trim() : '';
-      const date = typeof body.date === 'string' ? body.date.trim() : '';
-      const communicationType =
-        typeof body.communicationType === 'string' ? body.communicationType.trim() : '';
-      const intention = typeof body.intention === 'string' ? body.intention.trim() : '';
-      const notes = typeof body.notes === 'string' ? body.notes.trim() : '';
-      const staffName = typeof body.staffName === 'string' ? body.staffName.trim() : '';
-
-      if (!storeId || !date || !communicationType || !intention || !staffName) {
-        sendJson(res, 400, { message: '缺少必填字段：storeId/date/communicationType/intention/staffName' });
+      const required = parseRequiredTextFields(body, [
+        'storeId',
+        'date',
+        'communicationType',
+        'intention',
+        'staffName',
+      ]);
+      if (!required.ok) {
+        sendJson(res, 400, {
+          message: `缺少必填字段：${required.missingFields.join('/')}`,
+        });
         return;
       }
+      const { storeId, date, communicationType, intention, staffName } = required.values;
+      const notes = getTrimmedText(body.notes);
 
       if (!ObjectId.isValid(storeId)) {
         sendJson(res, 400, { message: 'storeId 格式不正确' });

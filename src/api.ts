@@ -26,11 +26,28 @@ export interface DeleteRecordResponse {
   storeStatus: StoreStatus;
 }
 
+function buildWriteAuthHeaders(init?: RequestInit) {
+  const method = (init?.method || 'GET').toUpperCase();
+  if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+    return {};
+  }
+
+  const writeKey = import.meta.env.VITE_API_WRITE_KEY?.trim();
+  if (!writeKey) {
+    return {};
+  }
+
+  return {
+    'x-api-key': writeKey,
+  };
+}
+
 async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, {
     ...init,
     headers: {
       'Content-Type': 'application/json',
+      ...buildWriteAuthHeaders(init),
       ...(init?.headers || {}),
     },
   });
