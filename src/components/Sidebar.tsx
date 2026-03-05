@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, List } from 'lucide-react';
+import { LayoutDashboard, List, User } from 'lucide-react';
 import { ViewState } from '../types';
 
 interface SidebarProps {
@@ -14,41 +14,43 @@ export default function Sidebar({ currentView, onChangeView }: SidebarProps) {
   ];
 
   return (
-    <div className="w-64 bg-slate-900 text-white flex flex-col h-full">
-      <div className="p-6">
-        <h1 className="text-xl font-bold tracking-tight text-indigo-400">运营数据系统</h1>
-        <p className="text-xs text-slate-400 mt-1">美团外卖 & 淘宝闪购</p>
-      </div>
-      <nav className="flex-1 px-4 space-y-2 mt-4">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = currentView === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => onChangeView(item.id)}
-              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                isActive
-                  ? 'bg-indigo-500/10 text-indigo-400'
-                  : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-              }`}
-            >
-              <Icon size={20} />
-              <span className="font-medium">{item.label}</span>
-            </button>
-          );
-        })}
-      </nav>
-      <div className="p-4 border-t border-slate-800">
-        <div className="flex items-center space-x-3 px-4 py-2">
-          <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center border border-slate-700">
-            <span className="text-sm font-medium text-slate-300">AD</span>
+    <header className="bg-white border-b border-slate-200 shadow-sm">
+      <div className="px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-8">
+            <div>
+              <h1 className="text-xl font-bold text-slate-900">售后付费推广系统</h1>
+              <p className="text-xs text-slate-500 mt-0.5">美团外卖 & 淘宝闪购</p>
+            </div>
+            <nav className="flex space-x-1">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = currentView === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => onChangeView(item.id)}
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all ${
+                      isActive
+                        ? 'bg-indigo-50 text-indigo-600 font-medium'
+                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                    }`}
+                  >
+                    <Icon size={18} />
+                    <span>{item.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
           </div>
-          <div className="text-sm">
-            <p className="font-medium text-slate-200">系统管理员</p>
+          <div className="flex items-center space-x-3 px-3 py-2 rounded-lg bg-slate-50">
+            <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
+              <User size={16} className="text-indigo-600" />
+            </div>
+            <span className="text-sm font-medium text-slate-700">系统管理员</span>
           </div>
         </div>
       </div>
-    </div>
+    </header>
   );
 }

@@ -132,31 +132,33 @@ export default function App() {
   };
 
   return (
-    <div className="flex h-screen bg-slate-50 font-sans text-slate-900 overflow-hidden">
+    <div className="flex flex-col h-screen bg-slate-50 font-sans text-slate-900">
       <Sidebar currentView={currentView} onChangeView={setCurrentView} />
 
-      <main className="flex-1 overflow-y-auto p-8">
-        {errorMessage && (
-          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {errorMessage}
-          </div>
-        )}
-        {isLoading && (
-          <div className="mb-6 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
-            正在加载云端数据...
-          </div>
-        )}
-        {currentView === 'dashboard' && (
-          <Dashboard recharges={recharges} followUps={followUps} />
-        )}
-        {currentView === 'list' && (
-          <StoreList
-            onSelectStore={setSelectedStore}
-            refreshKey={storeListRefreshKey}
-            followUps={followUps}
-            recharges={recharges}
-          />
-        )}
+      <main className="flex-1 overflow-y-auto">
+        <div className="max-w-[1600px] mx-auto px-8 py-6">
+          {errorMessage && (
+            <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {errorMessage}
+            </div>
+          )}
+          {isLoading && (
+            <div className="mb-6 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+              正在加载云端数据...
+            </div>
+          )}
+          {currentView === 'dashboard' && (
+            <Dashboard recharges={recharges} followUps={followUps} />
+          )}
+          {currentView === 'list' && (
+            <StoreList
+              onSelectStore={setSelectedStore}
+              refreshKey={storeListRefreshKey}
+              followUps={followUps}
+              recharges={recharges}
+            />
+          )}
+        </div>
       </main>
 
       {selectedStore && (
