@@ -6,6 +6,7 @@ export type StoreStatus = '待跟进' | '已跟进' | '已充值';
 export interface Store {
   id: string;
   storeCode: string;
+  merchantId?: string;
   name: string;
   platform: Platform;
   openDate: string;

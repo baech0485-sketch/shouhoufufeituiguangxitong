@@ -3,6 +3,7 @@ export function mapStore(doc) {
   return {
     id,
     storeCode: doc.sourceStoreId || id,
+    merchantId: doc.merchantId || '',
     name: doc.name,
     platform: doc.platform,
     openDate: doc.openDate,

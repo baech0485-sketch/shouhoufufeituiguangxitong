@@ -97,7 +97,7 @@ export default function StoreList({
   const end = total === 0 ? 0 : start + stores.length - 1;
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="mx-auto w-full max-w-[1680px]">
       <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-slate-900">店铺列表</h2>
@@ -148,7 +148,7 @@ export default function StoreList({
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-sm font-medium text-slate-500">
-                <th className="px-6 py-4">店铺ID</th>
+                <th className="px-6 py-4">商家ID</th>
                 <th className="px-6 py-4">店铺名称</th>
                 <th className="px-6 py-4">平台</th>
                 <th className="px-6 py-4">开单日期</th>
@@ -178,7 +178,7 @@ export default function StoreList({
                     onClick={() => onSelectStore(store)}
                     className="hover:bg-slate-50 transition-colors cursor-pointer group"
                   >
-                    <td className="px-6 py-4 text-slate-600 font-mono text-xs">{store.storeCode}</td>
+                    <td className="px-6 py-4 text-slate-600 font-mono text-xs">{store.merchantId || '-'}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
