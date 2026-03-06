@@ -1,4 +1,5 @@
 import { FollowUp, Recharge } from '../../types';
+import { normalizeAfterSalesStaffName } from '../../utils/afterSalesStaff.js';
 
 export interface DailyTrendItem {
   day: string;
@@ -78,28 +79,38 @@ export function buildStaffPerformance(
   > = {};
 
   monthlyRecharges.forEach((item) => {
-    if (!data[item.staffName]) {
-      data[item.staffName] = {
-        name: item.staffName,
+    const staffName = normalizeAfterSalesStaffName(item.staffName);
+    if (!staffName) {
+      return;
+    }
+
+    if (!data[staffName]) {
+      data[staffName] = {
+        name: staffName,
         amount: 0,
         followedStoreIds: new Set<string>(),
         rechargedStoreIds: new Set<string>(),
       };
     }
-    data[item.staffName].amount += item.amount;
-    data[item.staffName].rechargedStoreIds.add(item.storeId);
+    data[staffName].amount += item.amount;
+    data[staffName].rechargedStoreIds.add(item.storeId);
   });
 
   monthlyFollowUps.forEach((item) => {
-    if (!data[item.staffName]) {
-      data[item.staffName] = {
-        name: item.staffName,
+    const staffName = normalizeAfterSalesStaffName(item.staffName);
+    if (!staffName) {
+      return;
+    }
+
+    if (!data[staffName]) {
+      data[staffName] = {
+        name: staffName,
         amount: 0,
         followedStoreIds: new Set<string>(),
         rechargedStoreIds: new Set<string>(),
       };
     }
-    data[item.staffName].followedStoreIds.add(item.storeId);
+    data[staffName].followedStoreIds.add(item.storeId);
   });
 
   return Object.values(data)

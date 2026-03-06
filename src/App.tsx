@@ -4,11 +4,12 @@ import StoreList from './components/StoreList';
 import StoreDetailModal from './components/StoreDetailModal';
 import Dashboard from './components/Dashboard';
 import { Store, FollowUp, Recharge, ViewState } from './types';
-import { followUpApi, rechargeApi } from './api';
-import { DEFAULT_AFTER_SALES_STAFF } from './constants/staff';
+import { followUpApi, rechargeApi, storeApi } from './api';
+import { buildAfterSalesStaffOptions } from './utils/afterSalesStaff.js';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<ViewState>('dashboard');
+  const [stores, setStores] = useState<Store[]>([]);
   const [followUps, setFollowUps] = useState<FollowUp[]>([]);
   const [recharges, setRecharges] = useState<Recharge[]>([]);
   const [selectedStore, setSelectedStore] = useState<Store | null>(null);
@@ -17,18 +18,10 @@ export default function App() {
   const [errorMessage, setErrorMessage] = useState('');
 
   const staffOptions = useMemo(() => {
-    const allStaff = new Set<string>(DEFAULT_AFTER_SALES_STAFF);
-    followUps.forEach((item) => {
-      if (item.staffName) {
-        allStaff.add(item.staffName);
-      }
-    });
-    recharges.forEach((item) => {
-      if (item.staffName) {
-        allStaff.add(item.staffName);
-      }
-    });
-    return Array.from(allStaff).sort((a, b) => a.localeCompare(b, 'zh-CN'));
+    return buildAfterSalesStaffOptions([
+      ...followUps.map((item) => item.staffName),
+      ...recharges.map((item) => item.staffName),
+    ]);
   }, [followUps, recharges]);
 
   useEffect(() => {
@@ -36,10 +29,12 @@ export default function App() {
       setIsLoading(true);
       setErrorMessage('');
       try {
-        const [followUpData, rechargeData] = await Promise.all([
+        const [followUpData, rechargeData, storeData] = await Promise.all([
           followUpApi.list(),
           rechargeApi.list(),
+          storeApi.listAll(),
         ]);
+        setStores(storeData);
         setFollowUps(followUpData);
         setRecharges(rechargeData);
       } catch (error) {
@@ -148,7 +143,7 @@ export default function App() {
             </div>
           )}
           {currentView === 'dashboard' && (
-            <Dashboard recharges={recharges} followUps={followUps} />
+            <Dashboard stores={stores} recharges={recharges} followUps={followUps} />
           )}
           {currentView === 'list' && (
             <StoreList
@@ -156,6 +151,7 @@ export default function App() {
               refreshKey={storeListRefreshKey}
               followUps={followUps}
               recharges={recharges}
+              staffOptions={staffOptions}
             />
           )}
         </div>

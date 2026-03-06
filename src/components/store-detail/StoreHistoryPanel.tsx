@@ -1,6 +1,7 @@
 import React from 'react';
 import { Calendar, Trash2, User } from 'lucide-react';
 import { FollowUp, Recharge } from '../../types';
+import { normalizeAfterSalesStaffName } from '../../utils/afterSalesStaff.js';
 
 export type StoreDetailTab = 'followUp' | 'recharge';
 
@@ -69,7 +70,7 @@ export default function StoreHistoryPanel({
                 <div className="flex justify-between items-start mb-2">
                   <div className="flex items-center space-x-2 text-sm font-medium text-slate-900">
                     <User size={16} className="text-slate-400" />
-                    <span>{record.staffName}</span>
+                    <span>{normalizeAfterSalesStaffName(record.staffName)}</span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <div className="flex items-center space-x-1 text-xs text-slate-500">
@@ -109,7 +110,7 @@ export default function StoreHistoryPanel({
               <div className="flex justify-between items-center mb-3">
                 <div className="flex items-center space-x-2 text-sm font-medium text-slate-900">
                   <User size={16} className="text-slate-400" />
-                  <span>{record.staffName}</span>
+                  <span>{normalizeAfterSalesStaffName(record.staffName)}</span>
                 </div>
                 <div className="flex items-center space-x-3">
                   <div className="flex items-center space-x-1 text-xs text-slate-500">

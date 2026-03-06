@@ -20,6 +20,8 @@ export interface StoreListResponse {
   totalPages: number;
 }
 
+export type StoreFilterQuery = Omit<StoreListQuery, 'page' | 'pageSize'>;
+
 export interface DeleteRecordResponse {
   id: string;
   storeId: string;
@@ -90,6 +92,26 @@ export const storeApi = {
     const queryString = params.toString();
     const url = queryString ? `/api/stores?${queryString}` : '/api/stores';
     return requestJson<StoreListResponse>(url);
+  },
+  async listAll(query: StoreFilterQuery = {}) {
+    const pageSize = 100;
+    const firstPage = await storeApi.list({
+      ...query,
+      page: 1,
+      pageSize,
+    });
+    const allStores = [...firstPage.items];
+
+    for (let page = 2; page <= firstPage.totalPages; page += 1) {
+      const response = await storeApi.list({
+        ...query,
+        page,
+        pageSize,
+      });
+      allStores.push(...response.items);
+    }
+
+    return allStores;
   },
   create(payload: Omit<Store, 'id' | 'status' | 'storeCode'>) {
     return requestJson<Store>('/api/stores', {

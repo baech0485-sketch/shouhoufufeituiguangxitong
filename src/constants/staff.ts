@@ -1,1 +1,1 @@
-export const DEFAULT_AFTER_SALES_STAFF = ['朱雯雯'];
+export { DEFAULT_AFTER_SALES_STAFF } from '../utils/afterSalesStaff.js';

@@ -18,7 +18,7 @@ export default function Sidebar({ currentView, onChangeView }: SidebarProps) {
       <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-4 px-6 py-4 md:px-8 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-8">
           <div className="min-w-0 shrink-0">
-            <h1 className="text-xl font-bold tracking-tight text-slate-900">售后付费推广系统</h1>
+            <h1 className="text-xl font-bold tracking-tight text-slate-900">呈尚策划售后系统</h1>
             <p className="mt-1 text-xs font-medium text-slate-500">美团外卖 & 淘宝闪购</p>
           </div>
           <nav className="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50/80 p-1.5 shadow-inner shadow-slate-100/80">
