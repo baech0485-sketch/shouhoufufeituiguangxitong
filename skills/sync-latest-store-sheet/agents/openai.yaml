@@ -1,0 +1,3 @@
+interface:
+  display_name: "同步表格并入库"
+  short_description: "同步最新店铺表格并只新增入 MongoDB"

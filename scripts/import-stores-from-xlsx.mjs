@@ -1,207 +1,77 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
-import ExcelJS from 'exceljs';
-import { MongoClient } from 'mongodb';
+import { readProjectMongoConfig } from './store-sync/config.mjs';
+import { findLatestSpreadsheet } from './store-sync/latest-sheet.mjs';
+import { readStoreDocsFromWorkbook } from './store-sync/store-docs.mjs';
+import { upsertStoresToMongo } from './store-sync/upsert-stores.mjs';
 
-const DEFAULT_FILE_PATH = path.resolve(process.cwd(), '店铺全部数据-20260305.xlsx');
-const filePath = process.argv[2] ? path.resolve(process.argv[2]) : DEFAULT_FILE_PATH;
-const uri = process.env.MONGODB_URI;
-const dbName = process.env.MONGODB_DB || 'shouhoufufeituiguang';
-const BATCH_SIZE = 300;
+function parseArgs(argv) {
+  const options = { filePath: '', configFile: '', checkOnly: false };
 
-function toText(value) {
-  if (value === null || value === undefined) {
-    return '';
-  }
-  return String(value).trim();
-}
-
-function normalizeDate(value, fallback = '') {
-  const text = toText(value);
-  if (!text) {
-    return fallback;
-  }
-  const normalized = text.replace(/\//g, '-').slice(0, 10);
-  return /^\d{4}-\d{2}-\d{2}$/.test(normalized) ? normalized : fallback;
-}
-
-function mapPlatform(value) {
-  const text = toText(value);
-  if (!text) {
-    return '美团餐饮';
-  }
-  if (text.includes('饿了么')) {
-    return '饿了么餐饮';
-  }
-  if (text.includes('淘宝')) {
-    return '淘宝闪购';
-  }
-  if (text.includes('美团')) {
-    return '美团餐饮';
-  }
-  return text;
-}
-
-function mapStatus(value) {
-  const text = toText(value);
-  if (!text || text.includes('新店')) {
-    return '待跟进';
-  }
-  if (text.includes('充值') || text.includes('付费') || text.includes('续费')) {
-    return '已充值';
-  }
-  if (text.includes('跟进') || text.includes('沟通') || text.includes('联系')) {
-    return '已跟进';
-  }
-  return '待跟进';
-}
-
-function readWorksheetRows(worksheet) {
-  const headerCells = worksheet.getRow(1).values;
-  const headers = headerCells.slice(1).map((cell) => toText(cell));
-  const rows = [];
-
-  for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber += 1) {
-    const row = worksheet.getRow(rowNumber);
-    const record = {};
-    let hasAnyValue = false;
-
-    headers.forEach((header, index) => {
-      const cellValue = row.getCell(index + 1).text;
-      const normalizedValue = toText(cellValue);
-      record[header] = normalizedValue;
-      if (normalizedValue) {
-        hasAnyValue = true;
-      }
-    });
-
-    if (hasAnyValue) {
-      rows.push(record);
+  for (let index = 0; index < argv.length; index += 1) {
+    const argument = argv[index];
+    if (argument === '--check-only') {
+      options.checkOnly = true;
+      continue;
+    }
+    if (argument === '--config-file') {
+      options.configFile = argv[index + 1] || '';
+      index += 1;
+      continue;
+    }
+    if (!options.filePath) {
+      options.filePath = argument;
     }
   }
 
-  return rows;
+  return options;
 }
 
-function buildStoreDoc(row) {
-  const sourceStoreId = toText(row['店铺ID']);
-  const openDateCandidate = row['录入日期'] || row['合同签订日期'] || row['创建时间'];
-  const openDate = normalizeDate(openDateCandidate, new Date().toISOString().slice(0, 10));
-  const rawPlatform = toText(row['外卖平台']);
-  const rawStatus = toText(row['店铺状态']);
-  const cooperationDaysText = toText(row['解约合作天数']);
-  const cooperationDays = cooperationDaysText ? Number.parseInt(cooperationDaysText, 10) : null;
-  const now = new Date();
-
-  return {
-    sourceStoreId,
-    name: toText(row['店铺名']),
-    platform: mapPlatform(rawPlatform),
-    openDate,
-    status: mapStatus(rawStatus),
-    merchantId: toText(row['商家ID']),
-    wechatGroupName: toText(row['微信群名']),
-    city: toText(row['城市']),
-    salesName: toText(row['开单销售']),
-    contractDate: normalizeDate(row['合同签订日期']),
-    operationMode: toText(row['运营模式']),
-    operatorName: toText(row['负责运营']),
-    rawPlatform,
-    rawStatus,
-    terminationDate: normalizeDate(row['解约日期']),
-    cooperationDays: Number.isFinite(cooperationDays) ? cooperationDays : null,
-    sourceCreatedAt: toText(row['创建时间']),
-    sourceUpdatedAt: toText(row['更新时间']),
-    updatedAt: now,
-    importedFromExcelAt: now,
-  };
-}
-
-function buildFilter(doc) {
-  if (doc.sourceStoreId) {
-    return { sourceStoreId: doc.sourceStoreId };
-  }
-  return { name: doc.name, platform: doc.platform, openDate: doc.openDate };
+function resolveWorkbookPath(filePath) {
+  return filePath ? path.resolve(filePath) : findLatestSpreadsheet(process.cwd());
 }
 
 async function main() {
-  if (!uri) {
-    throw new Error('缺少环境变量 MONGODB_URI');
-  }
-  if (!fs.existsSync(filePath)) {
-    throw new Error(`Excel 文件不存在: ${filePath}`);
+  const { filePath, configFile, checkOnly } = parseArgs(process.argv.slice(2));
+  const workbookPath = resolveWorkbookPath(filePath);
+  const mongoConfig = readProjectMongoConfig(process.cwd(), configFile);
+
+  if (!fs.existsSync(workbookPath)) {
+    throw new Error(`未找到待导入的表格文件：${workbookPath}`);
   }
 
-  const workbook = new ExcelJS.Workbook();
-  await workbook.xlsx.readFile(filePath);
-  const worksheet = workbook.worksheets[0];
-  const rows = readWorksheetRows(worksheet);
+  console.log(`配置文件：${mongoConfig.envFilePath}`);
+  console.log(`数据库主机：${mongoConfig.mongoHosts}`);
+  console.log(`数据库名称：${mongoConfig.dbName}`);
+  console.log(`待导入表格：${workbookPath}`);
 
-  if (!rows.length) {
+  if (checkOnly) {
+    console.log('检查完成：数据库名称已确认正确，未执行导入');
+    return;
+  }
+
+  const storeDocs = await readStoreDocsFromWorkbook(workbookPath);
+  if (!storeDocs.length) {
     throw new Error('Excel 内容为空，未检测到可导入的店铺数据');
   }
 
-  const client = new MongoClient(uri, { maxPoolSize: 10 });
-  await client.connect();
-  const db = client.db(dbName);
-  const storesCollection = db.collection('stores');
+  const result = await upsertStoresToMongo({
+    mongoUri: mongoConfig.mongoUri,
+    dbName: mongoConfig.dbName,
+    storeDocs,
+    filePath: workbookPath,
+  });
 
-  await storesCollection.createIndex({ sourceStoreId: 1 }, { unique: true, sparse: true });
-  await storesCollection.createIndex({ openDate: -1, updatedAt: -1 });
-  await storesCollection.createIndex({ name: 1 });
-
-  let processedCount = 0;
-  let ignoredCount = 0;
-  let upsertedCount = 0;
-  let modifiedCount = 0;
-
-  for (let i = 0; i < rows.length; i += BATCH_SIZE) {
-    const batchRows = rows.slice(i, i + BATCH_SIZE);
-    const operations = [];
-
-    for (const row of batchRows) {
-      const doc = buildStoreDoc(row);
-      if (!doc.name) {
-        ignoredCount += 1;
-        continue;
-      }
-
-      operations.push({
-        updateOne: {
-          filter: buildFilter(doc),
-          update: {
-            $set: doc,
-            $setOnInsert: { createdAt: new Date() },
-          },
-          upsert: true,
-        },
-      });
-    }
-
-    if (!operations.length) {
-      continue;
-    }
-
-    const result = await storesCollection.bulkWrite(operations, { ordered: false });
-    processedCount += operations.length;
-    upsertedCount += result.upsertedCount;
-    modifiedCount += result.modifiedCount;
-  }
-
-  await client.close();
-
-  console.log('店铺数据导入完成');
-  console.log(`数据库: ${dbName}`);
-  console.log(`文件: ${filePath}`);
-  console.log(`总行数: ${rows.length}`);
-  console.log(`已处理: ${processedCount}`);
-  console.log(`新增: ${upsertedCount}`);
-  console.log(`更新: ${modifiedCount}`);
-  console.log(`忽略空店铺名: ${ignoredCount}`);
+  console.log('店铺数据导入完成（仅新增，不覆盖已有数据）');
+  console.log(`总行数：${result.totalRows}`);
+  console.log(`已处理：${result.processedCount}`);
+  console.log(`新增：${result.insertedCount}`);
+  console.log(`跳过已有：${result.skippedExistingCount}`);
+  console.log(`忽略空店铺名：${result.ignoredCount}`);
 }
 
 main().catch((error) => {
-  console.error('导入失败:', error.message);
+  console.error(`导入失败：${error.message}`);
   process.exit(1);
 });

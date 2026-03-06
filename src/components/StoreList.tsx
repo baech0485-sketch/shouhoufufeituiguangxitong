@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { storeApi } from '../api';
 import { FollowUp, Recharge, Store } from '../types';
 import StoreListFilters from './store-list/StoreListFilters';
+import { buildLatestFollowUpStaffMap, buildRecordCountMap } from './store-list/storeListMetrics.js';
 import StoreListPagination from './StoreListPagination';
 import StoreListTable from './store-list/StoreListTable';
 
@@ -31,15 +32,9 @@ export default function StoreList({
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const latestFollowUpStaffMap = useMemo(() => {
-    const map = new Map<string, string>();
-    followUps.forEach((record) => {
-      if (!map.has(record.storeId) && record.staffName) {
-        map.set(record.storeId, record.staffName);
-      }
-    });
-    return map;
-  }, [followUps]);
+  const latestFollowUpStaffMap = useMemo(() => buildLatestFollowUpStaffMap(followUps), [followUps]);
+  const followUpCountMap = useMemo(() => buildRecordCountMap(followUps), [followUps]);
+  const rechargeCountMap = useMemo(() => buildRecordCountMap(recharges), [recharges]);
 
   const totalRechargeAmountMap = useMemo(() => {
     const map = new Map<string, number>();
@@ -120,6 +115,8 @@ export default function StoreList({
           isLoading={isLoading}
           errorMessage={errorMessage}
           latestFollowUpStaffMap={latestFollowUpStaffMap}
+          followUpCountMap={followUpCountMap}
+          rechargeCountMap={rechargeCountMap}
           totalRechargeAmountMap={totalRechargeAmountMap}
           onSelectStore={onSelectStore}
         />

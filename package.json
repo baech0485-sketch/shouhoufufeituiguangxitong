@@ -10,7 +10,9 @@
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
     "test": "node --test api/_tests/*.test.js",
-    "import:stores": "node scripts/import-stores-from-xlsx.mjs"
+    "import:stores": "node scripts/import-stores-from-xlsx.mjs",
+    "import:stores:check": "node scripts/import-stores-from-xlsx.mjs --check-only",
+    "repair:store-statuses": "node scripts/repair-store-statuses.mjs"
   },
   "dependencies": {
     "exceljs": "^4.4.0",

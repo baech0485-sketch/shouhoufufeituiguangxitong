@@ -85,3 +85,27 @@ node scripts/import-stores-from-xlsx.mjs "你的Excel路径.xlsx"
 ```bash
 npm test
 ```
+## 最新表格导入云数据库
+
+每日同步表格后，可直接执行以下命令把当前目录最新的 `店铺全部数据-YYYYMMDD.xlsx` 增量导入云数据库：
+
+```bash
+node scripts/import-stores-from-xlsx.mjs
+```
+
+仅检查数据库目标是否正确，不执行导入：
+
+```bash
+node scripts/import-stores-from-xlsx.mjs --check-only
+```
+
+导入脚本只读取项目本地 `.env.mongodb-sync.local` 或 `.env.local`，不会读取终端环境变量。
+
+配置文件中必须包含：
+
+```env
+MONGODB_URI="你的云数据库连接串"
+MONGODB_DB="shouhoufufeituiguang"
+```
+
+如果数据库名称不是 `shouhoufufeituiguang`，脚本会直接停止，避免误写到其他项目数据库。

@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb';
 
-function getStoreStatus(hasRecharge, hasFollowUp) {
+export function deriveStoreStatus(hasRecharge, hasFollowUp) {
   if (hasRecharge) {
     return '已充值';
   }
@@ -21,7 +21,7 @@ export async function recalculateStoreStatus(db, storeId, now = new Date()) {
     db.collection('followups').findOne({ storeId }, { projection: { _id: 1 } }),
   ]);
 
-  const status = getStoreStatus(Boolean(rechargeRecord), Boolean(followUpRecord));
+  const status = deriveStoreStatus(Boolean(rechargeRecord), Boolean(followUpRecord));
   await db.collection('stores').updateOne(
     { _id: storeObjectId },
     { $set: { status, updatedAt: now } },
