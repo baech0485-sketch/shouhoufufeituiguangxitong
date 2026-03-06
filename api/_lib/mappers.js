@@ -11,6 +11,13 @@ export function mapStore(doc) {
   };
 }
 
+export function mapStorePlatform(doc) {
+  return {
+    id: doc._id.toString(),
+    platform: doc.platform,
+  };
+}
+
 export function mapFollowUp(doc) {
   return {
     id: doc._id.toString(),

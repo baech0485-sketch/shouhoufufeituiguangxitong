@@ -4,12 +4,12 @@ import StoreList from './components/StoreList';
 import StoreDetailModal from './components/StoreDetailModal';
 import Dashboard from './components/Dashboard';
 import { Store, FollowUp, Recharge, ViewState } from './types';
-import { followUpApi, rechargeApi, storeApi } from './api';
+import { followUpApi, rechargeApi, storeApi, StorePlatformItem } from './api';
 import { buildAfterSalesStaffOptions } from './utils/afterSalesStaff.js';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<ViewState>('dashboard');
-  const [stores, setStores] = useState<Store[]>([]);
+  const [storePlatforms, setStorePlatforms] = useState<StorePlatformItem[]>([]);
   const [followUps, setFollowUps] = useState<FollowUp[]>([]);
   const [recharges, setRecharges] = useState<Recharge[]>([]);
   const [selectedStore, setSelectedStore] = useState<Store | null>(null);
@@ -29,12 +29,12 @@ export default function App() {
       setIsLoading(true);
       setErrorMessage('');
       try {
-        const [followUpData, rechargeData, storeData] = await Promise.all([
+        const [followUpData, rechargeData, storePlatformData] = await Promise.all([
           followUpApi.list(),
           rechargeApi.list(),
-          storeApi.listAll(),
+          storeApi.listPlatforms(),
         ]);
-        setStores(storeData);
+        setStorePlatforms(storePlatformData);
         setFollowUps(followUpData);
         setRecharges(rechargeData);
       } catch (error) {
@@ -143,7 +143,11 @@ export default function App() {
             </div>
           )}
           {currentView === 'dashboard' && (
-            <Dashboard stores={stores} recharges={recharges} followUps={followUps} />
+            <Dashboard
+              storePlatforms={storePlatforms}
+              recharges={recharges}
+              followUps={followUps}
+            />
           )}
           {currentView === 'list' && (
             <StoreList

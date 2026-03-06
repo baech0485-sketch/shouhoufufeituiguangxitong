@@ -11,7 +11,8 @@ import {
   YAxis,
 } from 'recharts';
 import { DollarSign, Store as StoreIcon, TrendingUp, Users } from 'lucide-react';
-import { FollowUp, Recharge, Store } from '../types';
+import { FollowUp, Recharge } from '../types';
+import { StorePlatformItem } from '../api';
 import DashboardControls from './dashboard/DashboardControls';
 import DashboardStatCard from './dashboard/DashboardStatCard';
 import StaffPerformanceTable from './dashboard/StaffPerformanceTable';
@@ -29,17 +30,24 @@ import {
 type DashboardPlatformFilter = 'all' | 'meituan' | 'eleme';
 
 interface DashboardProps {
-  stores: Store[];
+  storePlatforms: StorePlatformItem[];
   recharges: Recharge[];
   followUps: FollowUp[];
 }
 
-export default function Dashboard({ stores, recharges, followUps }: DashboardProps) {
+export default function Dashboard({
+  storePlatforms,
+  recharges,
+  followUps,
+}: DashboardProps) {
   const [selectedMonth, setSelectedMonth] = useState('');
   const [selectedPlatform, setSelectedPlatform] =
     useState<DashboardPlatformFilter>('all');
 
-  const storePlatformMap = useMemo(() => buildStorePlatformMap(stores), [stores]);
+  const storePlatformMap = useMemo(
+    () => buildStorePlatformMap(storePlatforms),
+    [storePlatforms],
+  );
   const filteredRecharges = useMemo(
     () => filterRecordsByDashboardPlatform(recharges, selectedPlatform, storePlatformMap),
     [recharges, selectedPlatform, storePlatformMap],

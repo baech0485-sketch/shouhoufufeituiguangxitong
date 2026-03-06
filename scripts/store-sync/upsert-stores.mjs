@@ -27,7 +27,7 @@ export async function upsertStoresToMongo({ mongoUri, dbName, storeDocs, filePat
     const storesCollection = db.collection('stores');
 
     await storesCollection.createIndex({ sourceStoreId: 1 }, { unique: true, sparse: true });
-    await storesCollection.createIndex({ openDate: -1, updatedAt: -1 });
+    await storesCollection.createIndex({ openDate: -1, updatedAt: -1, createdAt: -1 });
     await storesCollection.createIndex({ name: 1 });
 
     let processedCount = 0;

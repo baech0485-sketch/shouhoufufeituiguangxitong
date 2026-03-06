@@ -22,6 +22,11 @@ export interface StoreListResponse {
 
 export type StoreFilterQuery = Omit<StoreListQuery, 'page' | 'pageSize'>;
 
+export interface StorePlatformItem {
+  id: string;
+  platform: string;
+}
+
 export interface DeleteRecordResponse {
   id: string;
   storeId: string;
@@ -112,6 +117,9 @@ export const storeApi = {
     }
 
     return allStores;
+  },
+  listPlatforms() {
+    return requestJson<StorePlatformItem[]>('/api/store-platforms');
   },
   create(payload: Omit<Store, 'id' | 'status' | 'storeCode'>) {
     return requestJson<Store>('/api/stores', {
