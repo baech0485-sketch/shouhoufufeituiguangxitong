@@ -48,8 +48,8 @@ export default function Dashboard({ recharges, followUps }: DashboardProps) {
       : '0.0';
 
   return (
-    <div className="mx-auto w-full max-w-[1680px] space-y-6">
-      <div className="mb-8 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+    <div className="w-full space-y-8">
+      <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
         <div>
           <h2 className="text-2xl font-bold text-slate-900">数据看板</h2>
           <p className="text-slate-500 mt-1">按月统计，月度充值趋势按日展示</p>
@@ -73,7 +73,7 @@ export default function Dashboard({ recharges, followUps }: DashboardProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
         <div className="bg-gradient-to-br from-blue-50 to-white p-6 rounded-2xl border border-blue-100 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center space-x-4">
             <div className="w-14 h-14 rounded-xl bg-blue-500 text-white flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/30">
@@ -120,7 +120,7 @@ export default function Dashboard({ recharges, followUps }: DashboardProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
           <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center">
             <span className="w-1 h-6 bg-emerald-500 rounded-full mr-3"></span>

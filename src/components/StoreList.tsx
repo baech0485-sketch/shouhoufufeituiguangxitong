@@ -92,8 +92,8 @@ export default function StoreList({
   const end = total === 0 ? 0 : start + stores.length - 1;
 
   return (
-    <div className="mx-auto w-full max-w-[1680px]">
-      <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="w-full space-y-6">
+      <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
         <div>
           <h2 className="text-2xl font-bold text-slate-900">店铺列表</h2>
           <p className="text-slate-500 mt-1">每页展示 10 条，翻页时才请求云数据库下一页数据</p>
