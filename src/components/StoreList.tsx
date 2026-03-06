@@ -5,6 +5,7 @@ import StoreListPagination from './StoreListPagination';
 import StoreListFilters from './store-list/StoreListFilters';
 import {
   buildLatestFollowUpStaffMap,
+  buildLatestPromotionStatusMap,
   buildRecordCountMap,
   filterStoresByStaff,
 } from './store-list/storeListMetrics.js';
@@ -41,6 +42,10 @@ export default function StoreList({
 
   const latestFollowUpStaffMap = useMemo(
     () => buildLatestFollowUpStaffMap(followUps),
+    [followUps],
+  );
+  const latestPromotionStatusMap = useMemo(
+    () => buildLatestPromotionStatusMap(followUps),
     [followUps],
   );
   const followUpCountMap = useMemo(() => buildRecordCountMap(followUps), [followUps]);
@@ -165,6 +170,7 @@ export default function StoreList({
           isLoading={isLoading}
           errorMessage={errorMessage}
           latestFollowUpStaffMap={latestFollowUpStaffMap}
+          latestPromotionStatusMap={latestPromotionStatusMap}
           followUpCountMap={followUpCountMap}
           rechargeCountMap={rechargeCountMap}
           totalRechargeAmountMap={totalRechargeAmountMap}

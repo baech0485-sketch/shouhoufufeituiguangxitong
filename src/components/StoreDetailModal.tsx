@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Store, FollowUp, Recharge, CommunicationType, Intention } from '../types';
-import FollowUpForm from './store-detail/FollowUpForm';
+import {
+  CommunicationType,
+  FollowUp,
+  Intention,
+  Recharge,
+  Store,
+} from '../types';
 import RechargeForm from './store-detail/RechargeForm';
+import FollowUpForm from './store-detail/FollowUpForm';
 import StoreDetailHeader from './store-detail/StoreDetailHeader';
 import StoreHistoryPanel, { StoreDetailTab } from './store-detail/StoreHistoryPanel';
 
@@ -29,14 +35,11 @@ export default function StoreDetailModal({
   staffOptions,
 }: StoreDetailModalProps) {
   const [activeTab, setActiveTab] = useState<StoreDetailTab>('followUp');
-  
-  // 跟进表单状态
   const [commType, setCommType] = useState<CommunicationType>('私聊');
   const [intention, setIntention] = useState<Intention>('未知');
   const [notes, setNotes] = useState('');
+  const [orderConversionRate30d, setOrderConversionRate30d] = useState('');
   const [staffName, setStaffName] = useState(staffOptions[0] || '');
-
-  // 充值表单状态
   const [amount, setAmount] = useState('');
   const [rechargeDate, setRechargeDate] = useState(new Date().toISOString().split('T')[0]);
   const [rechargeStaff, setRechargeStaff] = useState(staffOptions[0] || '');
@@ -52,10 +55,12 @@ export default function StoreDetailModal({
     }
   }, [staffOptions, staffName, rechargeStaff]);
 
-  const handleAddFollowUp = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!staffName) return;
-    
+  const handleAddFollowUp = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!staffName) {
+      return;
+    }
+
     onAddFollowUp({
       storeId: store.id,
       date: new Date().toISOString().split('T')[0],
@@ -63,15 +68,18 @@ export default function StoreDetailModal({
       intention,
       notes,
       staffName,
+      orderConversionRate30d: orderConversionRate30d ? Number(orderConversionRate30d) : null,
     });
-    
+
     setNotes('');
-    // 保留售后人员，便于连续录入
+    setOrderConversionRate30d('');
   };
 
-  const handleAddRecharge = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!amount || !rechargeStaff) return;
+  const handleAddRecharge = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!amount || !rechargeStaff) {
+      return;
+    }
 
     onAddRecharge({
       storeId: store.id,
@@ -93,8 +101,6 @@ export default function StoreDetailModal({
     setDeletingFollowUpId(followUpId);
     try {
       await onDeleteFollowUp(followUpId);
-    } catch {
-      // 错误提示由上层统一展示
     } finally {
       setDeletingFollowUpId('');
     }
@@ -109,16 +115,14 @@ export default function StoreDetailModal({
     setDeletingRechargeId(rechargeId);
     try {
       await onDeleteRecharge(rechargeId);
-    } catch {
-      // 错误提示由上层统一展示
     } finally {
       setDeletingRechargeId('');
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
+      <div className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl animate-in fade-in zoom-in-95 duration-200">
         <StoreDetailHeader store={store} onClose={onClose} />
         <div className="flex flex-1 overflow-hidden">
           <StoreHistoryPanel
@@ -131,18 +135,20 @@ export default function StoreDetailModal({
             onDeleteFollowUp={handleDeleteFollowUp}
             onDeleteRecharge={handleDeleteRecharge}
           />
-          <div className="w-1/2 flex flex-col bg-white">
-            <div className="p-6 flex-1 overflow-y-auto">
+          <div className="flex w-1/2 flex-col bg-white">
+            <div className="flex-1 overflow-y-auto p-6">
               {activeTab === 'followUp' ? (
                 <FollowUpForm
                   commType={commType}
                   intention={intention}
                   notes={notes}
+                  orderConversionRate30d={orderConversionRate30d}
                   staffName={staffName}
                   staffOptions={staffOptions}
                   onCommTypeChange={setCommType}
                   onIntentionChange={setIntention}
                   onNotesChange={setNotes}
+                  onOrderConversionRate30dChange={setOrderConversionRate30d}
                   onStaffNameChange={setStaffName}
                   onSubmit={handleAddFollowUp}
                 />

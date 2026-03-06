@@ -21,6 +21,7 @@ export interface FollowUp {
   intention: Intention;
   notes: string;
   staffName: string;
+  orderConversionRate30d: number | null;
 }
 
 export interface Recharge {

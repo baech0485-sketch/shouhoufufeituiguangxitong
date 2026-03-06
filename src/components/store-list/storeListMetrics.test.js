@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   buildLatestFollowUpStaffMap,
+  buildLatestPromotionStatusMap,
   buildRecordCountMap,
   filterStoresByStaff,
 } from './storeListMetrics.js';
@@ -67,4 +68,31 @@ test('filterStoresByStaff 能按售后筛选门店', () => {
     filterStoresByStaff(stores, '测试2', latestFollowUpStaffMap).map((store) => store.id),
     ['s2'],
   );
+});
+
+test('buildLatestPromotionStatusMap 使用最新跟进的30天转化率判断是否可做推广', () => {
+  const result = buildLatestPromotionStatusMap([
+    { storeId: 's1', orderConversionRate30d: 15 },
+    { storeId: 's1', orderConversionRate30d: 8 },
+    { storeId: 's2', orderConversionRate30d: 9 },
+    { storeId: 's3', orderConversionRate30d: 12 },
+    { storeId: 's4', orderConversionRate30d: null },
+  ]);
+
+  assert.deepEqual(result.get('s1'), {
+    orderConversionRate30d: 15,
+    promotionDecisionLabel: '可做推广',
+  });
+  assert.deepEqual(result.get('s2'), {
+    orderConversionRate30d: 9,
+    promotionDecisionLabel: '不可做推广',
+  });
+  assert.deepEqual(result.get('s3'), {
+    orderConversionRate30d: 12,
+    promotionDecisionLabel: '待观察',
+  });
+  assert.deepEqual(result.get('s4'), {
+    orderConversionRate30d: null,
+    promotionDecisionLabel: '-',
+  });
 });

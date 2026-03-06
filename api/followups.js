@@ -1,10 +1,16 @@
 import { ObjectId } from 'mongodb';
 import { getDb } from './_lib/mongodb.js';
 import { requireWriteAccess } from './_lib/auth.js';
-import { handleApiError, methodNotAllowed, readJsonBody, sendJson } from './_lib/http.js';
+import {
+  handleApiError,
+  methodNotAllowed,
+  readJsonBody,
+  sendJson,
+} from './_lib/http.js';
 import { mapFollowUp } from './_lib/mappers.js';
 import { recalculateStoreStatus } from './_lib/store-status.js';
 import { getTrimmedText, parseRequiredTextFields } from './_lib/validation.js';
+import { parseOrderConversionRate30d } from '../src/utils/promotionEligibility.js';
 
 export default async function handler(req, res) {
   if (!requireWriteAccess(req, res)) {
@@ -39,14 +45,30 @@ export default async function handler(req, res) {
         'intention',
         'staffName',
       ]);
+
       if (!required.ok) {
         sendJson(res, 400, {
           message: `缺少必填字段：${required.missingFields.join('/')}`,
         });
         return;
       }
+
       const { storeId, date, communicationType, intention, staffName } = required.values;
       const notes = getTrimmedText(body.notes);
+      const rawOrderConversionRate30d = body.orderConversionRate30d;
+      const orderConversionRate30d = parseOrderConversionRate30d(rawOrderConversionRate30d);
+
+      if (
+        rawOrderConversionRate30d !== ''
+        && rawOrderConversionRate30d !== null
+        && rawOrderConversionRate30d !== undefined
+        && orderConversionRate30d === null
+      ) {
+        sendJson(res, 400, {
+          message: '30天下单转化率必须是 0 到 100 之间的数字',
+        });
+        return;
+      }
 
       if (!ObjectId.isValid(storeId)) {
         sendJson(res, 400, { message: 'storeId 格式不正确' });
@@ -61,6 +83,7 @@ export default async function handler(req, res) {
         intention,
         notes,
         staffName,
+        orderConversionRate30d,
         createdAt: now,
       };
 
@@ -101,7 +124,9 @@ export default async function handler(req, res) {
 
       const db = await getDb();
       const followUpObjectId = new ObjectId(id);
-      const existingFollowUp = await db.collection('followups').findOne({ _id: followUpObjectId });
+      const existingFollowUp = await db
+        .collection('followups')
+        .findOne({ _id: followUpObjectId });
 
       if (!existingFollowUp) {
         sendJson(res, 404, { message: '跟进记录不存在' });
@@ -109,7 +134,11 @@ export default async function handler(req, res) {
       }
 
       await db.collection('followups').deleteOne({ _id: followUpObjectId });
-      const storeStatus = await recalculateStoreStatus(db, existingFollowUp.storeId, new Date());
+      const storeStatus = await recalculateStoreStatus(
+        db,
+        existingFollowUp.storeId,
+        new Date(),
+      );
 
       sendJson(res, 200, {
         id,
