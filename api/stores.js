@@ -2,6 +2,7 @@ import { getDb } from './_lib/mongodb.js';
 import { requireWriteAccess } from './_lib/auth.js';
 import { handleApiError, methodNotAllowed, readJsonBody, sendJson } from './_lib/http.js';
 import { mapStore } from './_lib/mappers.js';
+import { buildStoreListQuery } from './_lib/store-list-query.js';
 import { parseRequiredTextFields } from './_lib/validation.js';
 
 function parsePositiveInt(value, defaultValue, maxValue = Number.MAX_SAFE_INTEGER) {
@@ -10,10 +11,6 @@ function parsePositiveInt(value, defaultValue, maxValue = Number.MAX_SAFE_INTEGE
     return defaultValue;
   }
   return Math.min(parsed, maxValue);
-}
-
-function escapeRegex(input) {
-  return input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 export default async function handler(req, res) {
@@ -30,16 +27,11 @@ export default async function handler(req, res) {
       const platform = typeof req.query.platform === 'string' ? req.query.platform.trim() : '';
       const status = typeof req.query.status === 'string' ? req.query.status.trim() : '';
 
-      const query = {};
-      if (search) {
-        query.name = { $regex: escapeRegex(search), $options: 'i' };
-      }
-      if (platform) {
-        query.platform = platform;
-      }
-      if (status) {
-        query.status = status;
-      }
+      const query = buildStoreListQuery({
+        search,
+        platform,
+        status,
+      });
 
       const skip = (page - 1) * pageSize;
       const [stores, total] = await Promise.all([
