@@ -1,5 +1,7 @@
 import React from 'react';
-import { Filter, Search } from 'lucide-react';
+import { Filter, Search, UserRound } from 'lucide-react';
+import SelectField from '../ui/SelectField';
+import TextField from '../ui/TextField';
 
 interface StoreListFiltersProps {
   searchTerm: string;
@@ -13,6 +15,21 @@ interface StoreListFiltersProps {
   onFilterStaffChange: (value: string) => void;
 }
 
+const PLATFORM_OPTIONS = [
+  { label: '全部平台', value: '全部' },
+  { label: '美团餐饮', value: '美团餐饮' },
+  { label: '饿了么餐饮', value: '饿了么餐饮' },
+  { label: '美团外卖', value: '美团外卖' },
+  { label: '淘宝闪购', value: '淘宝闪购' },
+];
+
+const STATUS_OPTIONS = [
+  { label: '全部状态', value: '全部' },
+  { label: '待跟进', value: '待跟进' },
+  { label: '已跟进', value: '已跟进' },
+  { label: '已充值', value: '已充值' },
+];
+
 export default function StoreListFilters({
   searchTerm,
   filterPlatform,
@@ -24,62 +41,47 @@ export default function StoreListFilters({
   onFilterStatusChange,
   onFilterStaffChange,
 }: StoreListFiltersProps) {
+  const staffSelectOptions = [
+    { label: '全部售后', value: '全部' },
+    ...staffOptions.map((staffName) => ({
+      label: staffName,
+      value: staffName,
+    })),
+  ];
+
   return (
-    <div className="border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white p-6">
-      <div className="flex flex-col gap-4 md:flex-row">
-        <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-          <input
-            type="text"
-            placeholder="搜索店铺名称或商家ID..."
+    <div className="border-b border-slate-200 bg-gradient-to-r from-slate-50 via-white to-slate-50/80 p-6">
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-center">
+        <div className="min-w-0 flex-1">
+          <TextField
             value={searchTerm}
-            onChange={(event) => onSearchTermChange(event.target.value)}
-            className="w-full rounded-xl border border-slate-300 py-3 pl-12 pr-4 shadow-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"
+            placeholder="搜索店铺名称或商家ID..."
+            onChange={onSearchTermChange}
+            leadingIcon={<Search size={18} />}
           />
         </div>
 
-        <div className="flex flex-wrap gap-3">
-          <div className="relative">
-            <Filter
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-              size={18}
-            />
-            <select
-              value={filterPlatform}
-              onChange={(event) => onFilterPlatformChange(event.target.value)}
-              className="min-w-[150px] cursor-pointer appearance-none rounded-xl border border-slate-300 bg-white py-3 pl-10 pr-4 shadow-sm outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              <option value="全部">全部平台</option>
-              <option value="美团餐饮">美团餐饮</option>
-              <option value="饿了么餐饮">饿了么餐饮</option>
-              <option value="美团外卖">美团外卖</option>
-              <option value="淘宝闪购">淘宝闪购</option>
-            </select>
-          </div>
-
-          <select
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:flex xl:flex-wrap">
+          <SelectField
+            value={filterPlatform}
+            options={PLATFORM_OPTIONS}
+            onChange={onFilterPlatformChange}
+            leadingIcon={<Filter size={18} />}
+            containerClassName="min-w-[168px]"
+          />
+          <SelectField
             value={filterStatus}
-            onChange={(event) => onFilterStatusChange(event.target.value)}
-            className="min-w-[130px] cursor-pointer appearance-none rounded-xl border border-slate-300 bg-white px-4 py-3 shadow-sm outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            <option value="全部">全部状态</option>
-            <option value="待跟进">待跟进</option>
-            <option value="已跟进">已跟进</option>
-            <option value="已充值">已充值</option>
-          </select>
-
-          <select
+            options={STATUS_OPTIONS}
+            onChange={onFilterStatusChange}
+            containerClassName="min-w-[152px]"
+          />
+          <SelectField
             value={filterStaff}
-            onChange={(event) => onFilterStaffChange(event.target.value)}
-            className="min-w-[140px] cursor-pointer appearance-none rounded-xl border border-slate-300 bg-white px-4 py-3 shadow-sm outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            <option value="全部">全部售后</option>
-            {staffOptions.map((staffName) => (
-              <option key={staffName} value={staffName}>
-                {staffName}
-              </option>
-            ))}
-          </select>
+            options={staffSelectOptions}
+            onChange={onFilterStaffChange}
+            leadingIcon={<UserRound size={18} />}
+            containerClassName="min-w-[168px]"
+          />
         </div>
       </div>
     </div>
