@@ -14,40 +14,41 @@ export default function Sidebar({ currentView, onChangeView }: SidebarProps) {
   ];
 
   return (
-    <header className="bg-white border-b border-slate-200 shadow-sm">
-      <div className="px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-8">
-            <div>
-              <h1 className="text-xl font-bold text-slate-900">售后付费推广系统</h1>
-              <p className="text-xs text-slate-500 mt-0.5">美团外卖 & 淘宝闪购</p>
-            </div>
-            <nav className="flex space-x-1">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = currentView === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => onChangeView(item.id)}
-                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all ${
-                      isActive
-                        ? 'bg-indigo-50 text-indigo-600 font-medium'
-                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                    }`}
-                  >
-                    <Icon size={18} />
-                    <span>{item.label}</span>
-                  </button>
-                );
-              })}
-            </nav>
+    <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/95 backdrop-blur-sm shadow-sm">
+      <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-4 px-6 py-4 md:px-8 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-8">
+          <div className="min-w-0 shrink-0">
+            <h1 className="text-xl font-bold tracking-tight text-slate-900">售后付费推广系统</h1>
+            <p className="mt-1 text-xs font-medium text-slate-500">美团外卖 & 淘宝闪购</p>
           </div>
-          <div className="flex items-center space-x-3 px-3 py-2 rounded-lg bg-slate-50">
-            <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
-              <User size={16} className="text-indigo-600" />
-            </div>
-            <span className="text-sm font-medium text-slate-700">系统管理员</span>
+          <nav className="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50/80 p-1.5 shadow-inner shadow-slate-100/80">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = currentView === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => onChangeView(item.id)}
+                  className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-all ${
+                    isActive
+                      ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-indigo-100'
+                      : 'text-slate-600 hover:bg-white hover:text-slate-900'
+                  }`}
+                >
+                  <Icon size={18} />
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+        <div className="inline-flex items-center gap-3 self-start rounded-xl border border-slate-200 bg-slate-50/90 px-4 py-2.5 shadow-sm lg:self-auto">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-100 ring-1 ring-indigo-200/80">
+            <User size={16} className="text-indigo-600" />
+          </div>
+          <div>
+            <p className="text-xs font-medium uppercase tracking-[0.16em] text-slate-400">Admin</p>
+            <p className="text-sm font-semibold text-slate-700">系统管理员</p>
           </div>
         </div>
       </div>

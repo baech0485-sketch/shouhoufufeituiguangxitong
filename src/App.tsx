@@ -136,7 +136,7 @@ export default function App() {
       <Sidebar currentView={currentView} onChangeView={setCurrentView} />
 
       <main className="flex-1 overflow-y-auto">
-        <div className="max-w-[1600px] mx-auto px-8 py-6">
+        <div className="mx-auto w-full max-w-[1600px] px-6 pb-8 pt-8 md:px-8 lg:pt-10">
           {errorMessage && (
             <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
               {errorMessage}
