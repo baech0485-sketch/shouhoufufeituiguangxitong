@@ -1,6 +1,7 @@
 import React from 'react';
 import { LayoutDashboard, List, User } from 'lucide-react';
 import { ViewState } from '../types';
+import { getContentContainerClassName } from '../layout/contentWidth.js';
 
 interface SidebarProps {
   currentView: ViewState;
@@ -15,7 +16,9 @@ export default function Sidebar({ currentView, onChangeView }: SidebarProps) {
 
   return (
     <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/95 backdrop-blur-sm shadow-sm">
-      <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-4 px-6 py-4 md:px-8 lg:flex-row lg:items-center lg:justify-between">
+      <div
+        className={`${getContentContainerClassName(currentView)} flex flex-col gap-4 px-6 py-4 md:px-8 lg:flex-row lg:items-center lg:justify-between`}
+      >
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-8">
           <div className="min-w-0 shrink-0">
             <h1 className="text-xl font-bold tracking-tight text-slate-900">呈尚策划售后系统</h1>

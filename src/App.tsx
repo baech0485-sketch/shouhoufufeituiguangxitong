@@ -6,6 +6,7 @@ import Dashboard from './components/Dashboard';
 import { Store, FollowUp, Recharge, ViewState } from './types';
 import { followUpApi, rechargeApi, storeApi, StorePlatformItem } from './api';
 import { buildAfterSalesStaffOptions } from './utils/afterSalesStaff.js';
+import { getContentContainerClassName } from './layout/contentWidth.js';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<ViewState>('dashboard');
@@ -131,7 +132,9 @@ export default function App() {
       <Sidebar currentView={currentView} onChangeView={setCurrentView} />
 
       <main className="flex-1 overflow-y-auto">
-        <div className="mx-auto w-full max-w-[1600px] px-6 py-8 md:px-8 lg:py-10">
+        <div
+          className={`${getContentContainerClassName(currentView)} px-6 py-8 md:px-8 lg:py-10`}
+        >
           {errorMessage && (
             <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
               {errorMessage}
