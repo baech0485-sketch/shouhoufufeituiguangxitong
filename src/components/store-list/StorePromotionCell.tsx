@@ -25,15 +25,14 @@ export default function StorePromotionCell({
   return (
     <div className="flex flex-col gap-1">
       <span
-        className={`inline-flex w-fit items-center rounded-full px-3 py-1 text-xs font-semibold ${getPromotionBadgeClass(
+        className={`inline-flex w-fit items-center rounded-full px-3 py-1 text-sm font-medium ${getPromotionBadgeClass(
           promotionDecisionLabel,
         )}`}
       >
         {promotionDecisionLabel}
       </span>
-      <span className="text-xs text-slate-500">
-        30天转化率：
-        {orderConversionRate30d === null ? '-' : `${orderConversionRate30d}%`}
+      <span className="text-sm text-slate-500">
+        30天转化率：{orderConversionRate30d === null ? '-' : `${orderConversionRate30d}%`}
       </span>
     </div>
   );

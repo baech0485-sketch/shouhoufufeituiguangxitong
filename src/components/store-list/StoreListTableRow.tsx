@@ -1,7 +1,8 @@
 import React from 'react';
-import { ChevronRight, Sparkles, Store as StoreIcon } from 'lucide-react';
+import { Sparkles, Store as StoreIcon } from 'lucide-react';
 import { Store } from '../../types';
 import StorePromotionCell from './StorePromotionCell';
+import { getStoreNameTextClassName } from './storeListTablePresentation.js';
 
 interface PromotionStatusItem {
   orderConversionRate30d: number | null;
@@ -59,28 +60,30 @@ export default function StoreListTableRow({
   return (
     <tr
       onClick={() => onSelectStore(store)}
-      className="group cursor-pointer transition-all hover:bg-gradient-to-r hover:from-indigo-50/50 hover:to-transparent"
+      className="group cursor-pointer text-sm transition-all hover:bg-gradient-to-r hover:from-indigo-50/50 hover:to-transparent"
     >
-      <td className="px-6 py-4 font-mono text-xs text-slate-600">{store.merchantId || '-'}</td>
+      <td className="px-6 py-4 font-mono text-sm text-slate-600">{store.merchantId || '-'}</td>
       <td className="px-6 py-4">
         <div className="flex items-center space-x-3">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-md transition-shadow group-hover:shadow-lg">
             <StoreIcon size={20} />
           </div>
-          <span className="font-semibold text-slate-900 transition-colors group-hover:text-indigo-600">
-            {store.name}
-          </span>
+          <span className={getStoreNameTextClassName()}>{store.name}</span>
         </div>
       </td>
       <td className="px-6 py-4">
-        <span className={`inline-flex items-center rounded-lg px-3 py-1.5 text-xs font-semibold shadow-sm ${getPlatformBadgeClass(store.platform)}`}>
+        <span
+          className={`inline-flex items-center rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm ${getPlatformBadgeClass(
+            store.platform,
+          )}`}
+        >
           {store.platform}
         </span>
       </td>
       <td className="px-6 py-4 text-sm text-slate-600">{store.openDate}</td>
       <td className="px-6 py-4">
         <span
-          className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm ${
+          className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-medium shadow-sm ${
             store.status === '待跟进'
               ? 'bg-slate-100 text-slate-700'
               : store.status === '已跟进'
@@ -96,16 +99,26 @@ export default function StoreListTableRow({
         {latestFollowUpStaffMap.get(store.id) || '-'}
       </td>
       <td className="px-6 py-4">
-        <span className={`inline-flex min-w-[40px] items-center justify-center rounded-full px-3 py-1 text-xs font-semibold shadow-sm ${getCountBadgeClass(followUpCount, 'followUp')}`}>
+        <span
+          className={`inline-flex min-w-[40px] items-center justify-center rounded-full px-3 py-1 text-sm font-medium shadow-sm ${getCountBadgeClass(
+            followUpCount,
+            'followUp',
+          )}`}
+        >
           {followUpCount}
         </span>
       </td>
       <td className="px-6 py-4">
-        <span className={`inline-flex min-w-[40px] items-center justify-center rounded-full px-3 py-1 text-xs font-semibold shadow-sm ${getCountBadgeClass(rechargeCount, 'recharge')}`}>
+        <span
+          className={`inline-flex min-w-[40px] items-center justify-center rounded-full px-3 py-1 text-sm font-medium shadow-sm ${getCountBadgeClass(
+            rechargeCount,
+            'recharge',
+          )}`}
+        >
           {rechargeCount}
         </span>
       </td>
-      <td className="px-6 py-4 text-sm font-semibold text-slate-900">
+      <td className="px-6 py-4 text-sm font-medium text-slate-900">
         {totalRechargeAmountMap.has(store.id)
           ? `¥${totalRechargeAmountMap.get(store.id)?.toLocaleString()}`
           : '-'}
@@ -115,12 +128,6 @@ export default function StoreListTableRow({
           orderConversionRate30d={promotionStatus.orderConversionRate30d}
           promotionDecisionLabel={promotionStatus.promotionDecisionLabel}
         />
-      </td>
-      <td className="px-6 py-4 text-right">
-        <div className="inline-flex items-center gap-1 text-slate-400 transition-colors group-hover:text-indigo-600">
-          <span className="text-sm font-medium">详情</span>
-          <ChevronRight size={18} className="transition-transform group-hover:translate-x-1" />
-        </div>
       </td>
     </tr>
   );
