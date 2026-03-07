@@ -1,4 +1,4 @@
-import { FollowUp, Recharge } from '../../types';
+import type { FollowUp, Recharge } from '../../types.ts';
 import { normalizeAfterSalesStaffName } from '../../utils/afterSalesStaff.js';
 
 export interface DailyTrendItem {
@@ -12,6 +12,7 @@ export interface StaffPerformanceItem {
   amount: number;
   followedStores: number;
   rechargedStores: number;
+  promotableStores: number;
   conversionRate: number;
 }
 
@@ -75,6 +76,7 @@ export function buildStaffPerformance(
       amount: number;
       followedStoreIds: Set<string>;
       rechargedStoreIds: Set<string>;
+      promotableStoreIds: Set<string>;
     }
   > = {};
 
@@ -90,6 +92,7 @@ export function buildStaffPerformance(
         amount: 0,
         followedStoreIds: new Set<string>(),
         rechargedStoreIds: new Set<string>(),
+        promotableStoreIds: new Set<string>(),
       };
     }
     data[staffName].amount += item.amount;
@@ -108,15 +111,24 @@ export function buildStaffPerformance(
         amount: 0,
         followedStoreIds: new Set<string>(),
         rechargedStoreIds: new Set<string>(),
+        promotableStoreIds: new Set<string>(),
       };
     }
     data[staffName].followedStoreIds.add(item.storeId);
+    if (
+      item.orderConversionRate30d !== null
+      && item.orderConversionRate30d !== undefined
+      && Number(item.orderConversionRate30d) > 14
+    ) {
+      data[staffName].promotableStoreIds.add(item.storeId);
+    }
   });
 
   return Object.values(data)
     .map((item) => {
       const followedStores = item.followedStoreIds.size;
       const rechargedStores = item.rechargedStoreIds.size;
+      const promotableStores = item.promotableStoreIds.size;
       const conversionRate =
         followedStores > 0 ? Number(((rechargedStores / followedStores) * 100).toFixed(1)) : 0;
       return {
@@ -124,6 +136,7 @@ export function buildStaffPerformance(
         amount: item.amount,
         followedStores,
         rechargedStores,
+        promotableStores,
         conversionRate,
       };
     })
