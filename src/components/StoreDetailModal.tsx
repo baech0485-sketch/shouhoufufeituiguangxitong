@@ -10,6 +10,10 @@ import RechargeForm from './store-detail/RechargeForm';
 import FollowUpForm from './store-detail/FollowUpForm';
 import StoreDetailHeader from './store-detail/StoreDetailHeader';
 import StoreHistoryPanel, { StoreDetailTab } from './store-detail/StoreHistoryPanel';
+import {
+  getStoreDetailModalContainerClassName,
+  getStoreDetailModalPaneClassNames,
+} from './store-detail/modalLayout.js';
 
 interface StoreDetailModalProps {
   store: Store;
@@ -34,6 +38,7 @@ export default function StoreDetailModal({
   onDeleteRecharge,
   staffOptions,
 }: StoreDetailModalProps) {
+  const paneClassNames = getStoreDetailModalPaneClassNames();
   const [activeTab, setActiveTab] = useState<StoreDetailTab>('followUp');
   const [commType, setCommType] = useState<CommunicationType>('私聊');
   const [intention, setIntention] = useState<Intention>('未知');
@@ -122,20 +127,22 @@ export default function StoreDetailModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
-      <div className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl animate-in fade-in zoom-in-95 duration-200">
+      <div className={getStoreDetailModalContainerClassName()}>
         <StoreDetailHeader store={store} onClose={onClose} />
         <div className="flex flex-1 overflow-hidden">
-          <StoreHistoryPanel
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            followUps={followUps}
-            recharges={recharges}
-            deletingFollowUpId={deletingFollowUpId}
-            deletingRechargeId={deletingRechargeId}
-            onDeleteFollowUp={handleDeleteFollowUp}
-            onDeleteRecharge={handleDeleteRecharge}
-          />
-          <div className="flex w-1/2 flex-col bg-white">
+          <div className={paneClassNames.historyPane}>
+            <StoreHistoryPanel
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              followUps={followUps}
+              recharges={recharges}
+              deletingFollowUpId={deletingFollowUpId}
+              deletingRechargeId={deletingRechargeId}
+              onDeleteFollowUp={handleDeleteFollowUp}
+              onDeleteRecharge={handleDeleteRecharge}
+            />
+          </div>
+          <div className={paneClassNames.formPane}>
             <div className="flex-1 overflow-y-auto p-6">
               {activeTab === 'followUp' ? (
                 <FollowUpForm

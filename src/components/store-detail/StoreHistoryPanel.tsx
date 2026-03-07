@@ -41,7 +41,7 @@ export default function StoreHistoryPanel({
   onDeleteRecharge,
 }: StoreHistoryPanelProps) {
   return (
-    <div className="flex w-1/2 flex-col border-r border-slate-200 bg-slate-50/50">
+    <div className="flex h-full w-full flex-col border-r border-slate-200 bg-slate-50/50">
       <div className="flex space-x-4 border-b border-slate-200 p-4">
         <button
           type="button"
