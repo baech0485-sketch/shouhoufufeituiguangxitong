@@ -60,7 +60,7 @@ export default function StoreListTableRow({
   return (
     <tr
       onClick={() => onSelectStore(store)}
-      className="group cursor-pointer text-sm transition-all hover:bg-gradient-to-r hover:from-indigo-50/50 hover:to-transparent"
+      className="group cursor-pointer text-sm transition-all even:bg-slate-50/50 hover:bg-indigo-50/40"
     >
       <td className="px-6 py-4 font-mono text-sm text-slate-600">{store.merchantId || '-'}</td>
       <td className="px-6 py-4">
@@ -73,7 +73,7 @@ export default function StoreListTableRow({
       </td>
       <td className="px-6 py-4">
         <span
-          className={`inline-flex items-center rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm ${getPlatformBadgeClass(
+          className={`inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium shadow-sm ${getPlatformBadgeClass(
             store.platform,
           )}`}
         >
@@ -83,7 +83,7 @@ export default function StoreListTableRow({
       <td className="px-6 py-4 text-sm text-slate-600">{store.openDate}</td>
       <td className="px-6 py-4">
         <span
-          className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-medium shadow-sm ${
+          className={`inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-sm font-medium shadow-sm ${
             store.status === '待跟进'
               ? 'bg-slate-100 text-slate-700'
               : store.status === '已跟进'
@@ -100,7 +100,7 @@ export default function StoreListTableRow({
       </td>
       <td className="px-6 py-4">
         <span
-          className={`inline-flex min-w-[40px] items-center justify-center rounded-full px-3 py-1 text-sm font-medium shadow-sm ${getCountBadgeClass(
+          className={`inline-flex min-w-[40px] items-center justify-center rounded-md px-3 py-1 text-sm font-medium shadow-sm ${getCountBadgeClass(
             followUpCount,
             'followUp',
           )}`}
@@ -110,7 +110,7 @@ export default function StoreListTableRow({
       </td>
       <td className="px-6 py-4">
         <span
-          className={`inline-flex min-w-[40px] items-center justify-center rounded-full px-3 py-1 text-sm font-medium shadow-sm ${getCountBadgeClass(
+          className={`inline-flex min-w-[40px] items-center justify-center rounded-md px-3 py-1 text-sm font-medium shadow-sm ${getCountBadgeClass(
             rechargeCount,
             'recharge',
           )}`}

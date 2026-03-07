@@ -38,7 +38,7 @@ export default function StoreListTable(props: StoreListTableProps) {
     <div className="overflow-x-auto">
       <table className="w-full border-collapse text-left">
         <thead>
-          <tr className="border-b border-slate-200 bg-gradient-to-r from-slate-50 to-slate-100">
+          <tr className="border-b border-slate-200 bg-slate-50/80">
             {STORE_LIST_COLUMN_TITLES.map((title) => (
               <th
                 key={title}

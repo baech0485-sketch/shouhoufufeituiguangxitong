@@ -42,14 +42,14 @@ export default function StoreHistoryPanel({
 }: StoreHistoryPanelProps) {
   return (
     <div className="flex h-full w-full flex-col border-r border-slate-200 bg-slate-50/50">
-      <div className="flex space-x-4 border-b border-slate-200 p-4">
+      <div className="flex space-x-2 border-b border-slate-200 p-4">
         <button
           type="button"
           onClick={() => onTabChange('followUp')}
-          className={`flex-1 rounded-lg py-2 text-sm font-medium transition-colors ${
+          className={`flex-1 rounded-lg py-2 text-sm font-medium transition-all ${
             activeTab === 'followUp'
-              ? 'bg-white text-slate-900 shadow-sm'
-              : 'text-slate-500 hover:text-slate-700'
+              ? 'bg-indigo-50 text-indigo-700 shadow-sm ring-1 ring-indigo-200/50'
+              : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'
           }`}
         >
           跟进记录 ({followUps.length})
@@ -57,10 +57,10 @@ export default function StoreHistoryPanel({
         <button
           type="button"
           onClick={() => onTabChange('recharge')}
-          className={`flex-1 rounded-lg py-2 text-sm font-medium transition-colors ${
+          className={`flex-1 rounded-lg py-2 text-sm font-medium transition-all ${
             activeTab === 'recharge'
-              ? 'bg-white text-slate-900 shadow-sm'
-              : 'text-slate-500 hover:text-slate-700'
+              ? 'bg-indigo-50 text-indigo-700 shadow-sm ring-1 ring-indigo-200/50'
+              : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'
           }`}
         >
           充值记录 ({recharges.length})
@@ -73,7 +73,7 @@ export default function StoreHistoryPanel({
             followUps.map((record) => (
               <div
                 key={record.id}
-                className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+                className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
               >
                 <div className="mb-2 flex items-start justify-between">
                   <div className="flex items-center space-x-2 text-sm font-medium text-slate-900">
@@ -89,7 +89,7 @@ export default function StoreHistoryPanel({
                       type="button"
                       onClick={() => void onDeleteFollowUp(record.id)}
                       disabled={deletingFollowUpId === record.id}
-                      className="inline-flex items-center space-x-1 text-xs text-red-600 hover:text-red-700 disabled:cursor-not-allowed disabled:text-slate-400"
+                      className="inline-flex items-center space-x-1 rounded-md px-1.5 py-0.5 text-xs text-red-600 transition-colors hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:text-slate-400"
                     >
                       <Trash2 size={14} />
                       <span>{deletingFollowUpId === record.id ? '删除中' : '删除'}</span>
@@ -139,7 +139,7 @@ export default function StoreHistoryPanel({
           recharges.map((record) => (
             <div
               key={record.id}
-              className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+              className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
             >
               <div className="mb-3 flex items-center justify-between">
                 <div className="flex items-center space-x-2 text-sm font-medium text-slate-900">

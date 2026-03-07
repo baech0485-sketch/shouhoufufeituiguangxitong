@@ -10,12 +10,12 @@ interface StoreDetailHeaderProps {
 
 function getStatusClass(status: Store['status']) {
   if (status === '待跟进') {
-    return 'bg-slate-200 text-slate-700';
+    return 'bg-slate-100 text-slate-700';
   }
   if (status === '已跟进') {
-    return 'bg-blue-200 text-blue-800';
+    return 'bg-blue-100 text-blue-700';
   }
-  return 'bg-emerald-200 text-emerald-800';
+  return 'bg-emerald-100 text-emerald-700';
 }
 
 export default function StoreDetailHeader({ store, onClose }: StoreDetailHeaderProps) {
@@ -78,7 +78,7 @@ export default function StoreDetailHeader({ store, onClose }: StoreDetailHeaderP
           <span>•</span>
           <span>开店日期 {store.openDate}</span>
           <span>•</span>
-          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusClass(store.status)}`}>
+          <span className={`rounded-md px-2 py-0.5 text-xs font-medium ${getStatusClass(store.status)}`}>
             {store.status}
           </span>
           {copyMessage ? <span className="text-indigo-600 font-medium">{copyMessage}</span> : null}
@@ -87,7 +87,7 @@ export default function StoreDetailHeader({ store, onClose }: StoreDetailHeaderP
       <button
         type="button"
         onClick={onClose}
-        className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded-full transition-colors"
+        className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
       >
         <X size={24} />
       </button>

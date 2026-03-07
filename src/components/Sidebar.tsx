@@ -24,7 +24,7 @@ export default function Sidebar({ currentView, onChangeView }: SidebarProps) {
             <h1 className="text-xl font-bold tracking-tight text-slate-900">呈尚策划售后系统</h1>
             <p className="mt-1 text-xs font-medium text-slate-500">美团外卖 & 淘宝闪购</p>
           </div>
-          <nav className="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50/80 p-1.5 shadow-inner shadow-slate-100/80">
+          <nav className="flex flex-wrap items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50/80 p-1.5 shadow-inner shadow-slate-100/80">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = currentView === item.id;
@@ -32,9 +32,9 @@ export default function Sidebar({ currentView, onChangeView }: SidebarProps) {
                 <button
                   key={item.id}
                   onClick={() => onChangeView(item.id)}
-                  className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-all ${
+                  className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${
                     isActive
-                      ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-indigo-100'
+                      ? 'bg-indigo-50 text-indigo-600 shadow-sm ring-1 ring-indigo-200/50'
                       : 'text-slate-600 hover:bg-white hover:text-slate-900'
                   }`}
                 >
@@ -45,8 +45,8 @@ export default function Sidebar({ currentView, onChangeView }: SidebarProps) {
             })}
           </nav>
         </div>
-        <div className="inline-flex items-center gap-3 self-start rounded-xl border border-slate-200 bg-slate-50/90 px-4 py-2.5 shadow-sm lg:self-auto">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-100 ring-1 ring-indigo-200/80">
+        <div className="inline-flex items-center gap-3 self-start rounded-lg border border-slate-200 bg-slate-50/90 px-4 py-2.5 shadow-sm lg:self-auto">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-100 ring-1 ring-indigo-200/80">
             <User size={16} className="text-indigo-600" />
           </div>
           <div>

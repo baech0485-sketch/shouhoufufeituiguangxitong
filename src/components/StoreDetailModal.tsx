@@ -135,8 +135,8 @@ export default function StoreDetailModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
-      <div className={getStoreDetailModalContainerClassName()}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm animate-fade-in">
+      <div className={`${getStoreDetailModalContainerClassName()} animate-modal-in`}>
         <StoreDetailHeader store={store} onClose={onClose} />
         <div className="flex flex-1 overflow-hidden">
           <div className={paneClassNames.historyPane}>

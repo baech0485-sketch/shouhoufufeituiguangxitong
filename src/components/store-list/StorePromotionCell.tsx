@@ -25,7 +25,7 @@ export default function StorePromotionCell({
   return (
     <div className="flex flex-col gap-1">
       <span
-        className={`inline-flex w-fit items-center rounded-full px-3 py-1 text-sm font-medium ${getPromotionBadgeClass(
+        className={`inline-flex w-fit items-center rounded-md px-3 py-1 text-sm font-medium ${getPromotionBadgeClass(
           promotionDecisionLabel,
         )}`}
       >

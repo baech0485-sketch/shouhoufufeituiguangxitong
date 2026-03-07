@@ -45,7 +45,7 @@ export default function StoreEntry({ onAddStore }: StoreEntryProps) {
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+              className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
               placeholder="请输入店铺名称"
               required
             />
@@ -63,7 +63,7 @@ export default function StoreEntry({ onAddStore }: StoreEntryProps) {
                   onClick={() => setPlatform(p)}
                   className={`px-4 py-3 rounded-lg border font-medium transition-all ${
                     platform === p
-                      ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+                      ? 'bg-indigo-50 text-indigo-700 shadow-sm ring-1 ring-indigo-200/50'
                       : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
                   }`}
                 >
@@ -82,7 +82,7 @@ export default function StoreEntry({ onAddStore }: StoreEntryProps) {
               id="openDate"
               value={openDate}
               onChange={(e) => setOpenDate(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+              className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
               required
             />
           </div>
@@ -99,7 +99,7 @@ export default function StoreEntry({ onAddStore }: StoreEntryProps) {
         </form>
 
         {showSuccess && (
-          <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center space-x-3 text-green-700 animate-in fade-in slide-in-from-bottom-4">
+          <div className="mt-4 p-4 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center space-x-3 text-emerald-700 animate-slide-up">
             <CheckCircle2 size={20} />
             <span className="font-medium">店铺录入成功！</span>
           </div>

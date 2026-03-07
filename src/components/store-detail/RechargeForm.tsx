@@ -36,7 +36,7 @@ export default function RechargeForm({
   return (
     <div>
       <h4 className="mb-4 flex items-center text-lg font-bold text-slate-900">
-        <DollarSign size={20} className="mr-2 text-emerald-500" />
+        <DollarSign size={20} className="mr-2 text-indigo-500" />
         新增充值记录
       </h4>
       <form onSubmit={onSubmit} className="space-y-4">
@@ -49,7 +49,7 @@ export default function RechargeForm({
             value={amount}
             onChange={(event) => onAmountChange(event.target.value)}
             placeholder="0.00"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-lg font-medium outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-lg font-medium outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
             required
           />
         </div>
@@ -60,7 +60,7 @@ export default function RechargeForm({
             type="date"
             value={rechargeDate}
             onChange={(event) => onRechargeDateChange(event.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full rounded-lg border border-slate-200 px-3 py-2 outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
             required
           />
         </div>
@@ -70,7 +70,7 @@ export default function RechargeForm({
           <select
             value={rechargeStaff}
             onChange={(event) => onRechargeStaffChange(event.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full rounded-lg border border-slate-200 px-3 py-2 outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
             required
           >
             {staffOptions.map((option) => (
@@ -92,7 +92,7 @@ export default function RechargeForm({
 
         <button
           type="submit"
-          className="mt-4 flex w-full items-center justify-center space-x-2 rounded-lg bg-emerald-600 px-4 py-2.5 font-medium text-white transition-colors hover:bg-emerald-700"
+          className="mt-4 flex w-full items-center justify-center space-x-2 rounded-lg bg-indigo-600 px-4 py-2.5 font-medium text-white transition-colors hover:bg-indigo-700"
         >
           <Plus size={18} />
           <span>保存充值记录</span>

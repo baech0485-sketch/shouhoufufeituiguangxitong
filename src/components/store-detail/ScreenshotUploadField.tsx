@@ -21,14 +21,14 @@ export default function ScreenshotUploadField({
   return (
     <div>
       <label className="mb-1 block text-sm font-medium text-slate-700">{label}</label>
-      <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-center text-slate-500 transition-colors hover:border-emerald-400 hover:bg-emerald-50/40">
+      <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-center text-slate-500 transition-colors hover:border-indigo-400 hover:bg-indigo-50/40">
         <input
           type="file"
           accept="image/png,image/jpeg,image/webp"
           className="hidden"
           onChange={(event) => onFileChange(event.target.files?.[0] || null)}
         />
-        <ImagePlus size={24} className="mb-2 text-emerald-500" />
+        <ImagePlus size={24} className="mb-2 text-indigo-500" />
         <span className="text-sm font-medium text-slate-700">点击上传截图</span>
         <span className="mt-1 text-xs text-slate-500">支持 JPG、PNG、WEBP，最大 2MB</span>
       </label>

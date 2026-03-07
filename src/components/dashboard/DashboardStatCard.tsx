@@ -17,7 +17,7 @@ export default function DashboardStatCard({
 }: DashboardStatCardProps) {
   return (
     <div
-      className={`rounded-2xl border bg-gradient-to-br to-white p-6 shadow-sm transition-shadow hover:shadow-md ${cardClassName}`}
+      className={`rounded-xl border bg-gradient-to-br to-white p-6 shadow-card transition-shadow hover:shadow-card-hover ${cardClassName}`}
     >
       <div className="flex items-center space-x-4">
         <div

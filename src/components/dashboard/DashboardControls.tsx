@@ -38,10 +38,10 @@ export default function DashboardControls({
                 key={option.value}
                 type="button"
                 onClick={() => onPlatformChange(option.value)}
-                className={`rounded-xl border px-4 py-2 text-sm font-medium transition-all ${
+                className={`rounded-lg border px-4 py-2 text-sm font-medium transition-all ${
                   isActive
-                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700 shadow-sm'
-                    : 'border-slate-300 bg-white text-slate-600 hover:border-slate-400 hover:text-slate-900'
+                    ? 'bg-indigo-50 text-indigo-700 shadow-sm ring-1 ring-indigo-200/50'
+                    : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900'
                 }`}
               >
                 {option.label}
@@ -58,7 +58,7 @@ export default function DashboardControls({
           id="dashboard-month"
           value={selectedMonth}
           onChange={(event) => onMonthChange(event.target.value)}
-          className="min-w-[160px] rounded-xl border border-slate-300 bg-white px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+          className="min-w-[160px] rounded-lg border border-slate-200 bg-white px-4 py-2 outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
         >
           {(availableMonths.length > 0 ? availableMonths : [selectedMonth]).map((month) => (
             <option key={month} value={month}>

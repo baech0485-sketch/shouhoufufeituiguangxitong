@@ -9,10 +9,10 @@ test('getFieldContainerClassName 为输入和下拉返回统一外层样式', ()
   const inputContainer = getFieldContainerClassName({ hasLeadingIcon: true });
   const selectContainer = getFieldContainerClassName({ hasLeadingIcon: false });
 
-  assert.match(inputContainer, /rounded-2xl/);
+  assert.match(inputContainer, /rounded-lg/);
   assert.match(inputContainer, /border-slate-200/);
   assert.match(inputContainer, /focus-within:ring-2/);
-  assert.match(selectContainer, /rounded-2xl/);
+  assert.match(selectContainer, /rounded-lg/);
   assert.match(selectContainer, /shadow-sm/);
 });
 
