@@ -55,6 +55,7 @@ export default async function handler(req, res) {
 
       const { storeId, date, communicationType, intention, staffName } = required.values;
       const notes = getTrimmedText(body.notes);
+      const screenshotUrl = getTrimmedText(body.screenshotUrl);
       const rawOrderConversionRate30d = body.orderConversionRate30d;
       const orderConversionRate30d = parseOrderConversionRate30d(rawOrderConversionRate30d);
 
@@ -84,6 +85,7 @@ export default async function handler(req, res) {
         notes,
         staffName,
         orderConversionRate30d,
+        screenshotUrl,
         createdAt: now,
       };
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import { MessageCircle, Plus } from 'lucide-react';
 import { CommunicationType, Intention } from '../../types';
+import ScreenshotUploadField from './ScreenshotUploadField';
 
 interface FollowUpFormProps {
   commType: CommunicationType;
@@ -9,11 +10,16 @@ interface FollowUpFormProps {
   orderConversionRate30d: string;
   staffName: string;
   staffOptions: string[];
+  screenshotName: string;
+  screenshotPreviewUrl: string;
+  screenshotError: string;
   onCommTypeChange: (value: CommunicationType) => void;
   onIntentionChange: (value: Intention) => void;
   onNotesChange: (value: string) => void;
   onOrderConversionRate30dChange: (value: string) => void;
   onStaffNameChange: (value: string) => void;
+  onScreenshotChange: (file: File | null) => void;
+  onScreenshotRemove: () => void;
   onSubmit: (event: React.FormEvent) => void;
 }
 
@@ -24,11 +30,16 @@ export default function FollowUpForm({
   orderConversionRate30d,
   staffName,
   staffOptions,
+  screenshotName,
+  screenshotPreviewUrl,
+  screenshotError,
   onCommTypeChange,
   onIntentionChange,
   onNotesChange,
   onOrderConversionRate30dChange,
   onStaffNameChange,
+  onScreenshotChange,
+  onScreenshotRemove,
   onSubmit,
 }: FollowUpFormProps) {
   return (
@@ -97,9 +108,18 @@ export default function FollowUpForm({
             className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
           />
           <p className="mt-1 text-xs text-slate-500">
-            大于 14% 可做推广，小于 10% 不可做推广，介于两者之间会显示为待观察。
+            大于 14% 可做推广，小于 10% 不可做推广。
           </p>
         </div>
+
+        <ScreenshotUploadField
+          label="跟进截图"
+          screenshotName={screenshotName}
+          screenshotPreviewUrl={screenshotPreviewUrl}
+          screenshotError={screenshotError}
+          onFileChange={onScreenshotChange}
+          onRemove={onScreenshotRemove}
+        />
 
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700">跟进备注</label>

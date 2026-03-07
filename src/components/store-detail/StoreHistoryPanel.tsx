@@ -120,6 +120,16 @@ export default function StoreHistoryPanel({
                 <p className="rounded-lg border border-slate-100 bg-slate-50 p-3 text-sm text-slate-700">
                   {record.notes || '无备注内容'}
                 </p>
+                {record.screenshotUrl && (
+                  <div className="mt-3 overflow-hidden rounded-lg border border-slate-200">
+                    <img
+                      src={record.screenshotUrl}
+                      alt="跟进截图"
+                      className="max-h-56 w-full object-contain bg-slate-50"
+                      referrerPolicy="no-referrer"
+                    />
+                  </div>
+                )}
               </div>
             ))
           ) : (

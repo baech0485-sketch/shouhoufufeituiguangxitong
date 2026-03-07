@@ -31,6 +31,7 @@ export function mapFollowUp(doc) {
       doc.orderConversionRate30d === null || doc.orderConversionRate30d === undefined
         ? null
         : Number(doc.orderConversionRate30d),
+    screenshotUrl: doc.screenshotUrl || '',
   };
 }
 

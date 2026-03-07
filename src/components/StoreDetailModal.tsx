@@ -6,6 +6,7 @@ import {
   Recharge,
   Store,
 } from '../types';
+import { buildRechargePayload } from '../utils/rechargeSubmission.js';
 import RechargeForm from './store-detail/RechargeForm';
 import FollowUpForm from './store-detail/FollowUpForm';
 import StoreDetailHeader from './store-detail/StoreDetailHeader';
@@ -14,6 +15,7 @@ import {
   getStoreDetailModalContainerClassName,
   getStoreDetailModalPaneClassNames,
 } from './store-detail/modalLayout.js';
+import { useImageUploadField } from './store-detail/useImageUploadField';
 
 interface StoreDetailModalProps {
   store: Store;
@@ -50,6 +52,8 @@ export default function StoreDetailModal({
   const [rechargeStaff, setRechargeStaff] = useState(staffOptions[0] || '');
   const [deletingFollowUpId, setDeletingFollowUpId] = useState('');
   const [deletingRechargeId, setDeletingRechargeId] = useState('');
+  const followUpScreenshot = useImageUploadField();
+  const rechargeScreenshot = useImageUploadField();
 
   useEffect(() => {
     if (!staffName && staffOptions.length > 0) {
@@ -62,7 +66,7 @@ export default function StoreDetailModal({
 
   const handleAddFollowUp = (event: React.FormEvent) => {
     event.preventDefault();
-    if (!staffName) {
+    if (!staffName || followUpScreenshot.screenshotError) {
       return;
     }
 
@@ -74,27 +78,32 @@ export default function StoreDetailModal({
       notes,
       staffName,
       orderConversionRate30d: orderConversionRate30d ? Number(orderConversionRate30d) : null,
+      screenshotUrl: followUpScreenshot.screenshotUrl,
     });
 
     setNotes('');
     setOrderConversionRate30d('');
+    followUpScreenshot.clearScreenshot();
   };
 
   const handleAddRecharge = (event: React.FormEvent) => {
     event.preventDefault();
-    if (!amount || !rechargeStaff) {
+    if (!amount || !rechargeStaff || rechargeScreenshot.screenshotError) {
       return;
     }
 
-    onAddRecharge({
-      storeId: store.id,
-      amount: Number(amount),
-      date: rechargeDate,
-      screenshotUrl: 'https://picsum.photos/seed/receipt/400/300',
-      staffName: rechargeStaff,
-    });
+    onAddRecharge(
+      buildRechargePayload({
+        storeId: store.id,
+        amount,
+        date: rechargeDate,
+        screenshotUrl: rechargeScreenshot.screenshotUrl,
+        staffName: rechargeStaff,
+      }),
+    );
 
     setAmount('');
+    rechargeScreenshot.clearScreenshot();
   };
 
   const handleDeleteFollowUp = async (followUpId: string) => {
@@ -152,11 +161,16 @@ export default function StoreDetailModal({
                   orderConversionRate30d={orderConversionRate30d}
                   staffName={staffName}
                   staffOptions={staffOptions}
+                  screenshotName={followUpScreenshot.screenshotName}
+                  screenshotPreviewUrl={followUpScreenshot.screenshotUrl}
+                  screenshotError={followUpScreenshot.screenshotError}
                   onCommTypeChange={setCommType}
                   onIntentionChange={setIntention}
                   onNotesChange={setNotes}
                   onOrderConversionRate30dChange={setOrderConversionRate30d}
                   onStaffNameChange={setStaffName}
+                  onScreenshotChange={followUpScreenshot.handleScreenshotChange}
+                  onScreenshotRemove={followUpScreenshot.clearScreenshot}
                   onSubmit={handleAddFollowUp}
                 />
               ) : (
@@ -165,9 +179,14 @@ export default function StoreDetailModal({
                   rechargeDate={rechargeDate}
                   rechargeStaff={rechargeStaff}
                   staffOptions={staffOptions}
+                  screenshotName={rechargeScreenshot.screenshotName}
+                  screenshotPreviewUrl={rechargeScreenshot.screenshotUrl}
+                  screenshotError={rechargeScreenshot.screenshotError}
                   onAmountChange={setAmount}
                   onRechargeDateChange={setRechargeDate}
                   onRechargeStaffChange={setRechargeStaff}
+                  onScreenshotChange={rechargeScreenshot.handleScreenshotChange}
+                  onScreenshotRemove={rechargeScreenshot.clearScreenshot}
                   onSubmit={handleAddRecharge}
                 />
               )}

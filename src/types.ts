@@ -22,6 +22,7 @@ export interface FollowUp {
   notes: string;
   staffName: string;
   orderConversionRate30d: number | null;
+  screenshotUrl: string;
 }
 
 export interface Recharge {
