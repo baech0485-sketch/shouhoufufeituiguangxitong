@@ -4,6 +4,7 @@ import { requireWriteAccess } from './_lib/auth.js';
 import { handleApiError, methodNotAllowed, readJsonBody, sendJson } from './_lib/http.js';
 import { mapStore } from './_lib/mappers.js';
 import { buildStoreListQuery } from './_lib/store-list-query.js';
+import { buildLatestStoreIdsByStaff } from './_lib/store-list-staff.js';
 import {
   deriveStoreStatus,
   MANUAL_PROMOTING_STATUS,
@@ -31,12 +32,46 @@ export default async function handler(req, res) {
       const search = typeof req.query.search === 'string' ? req.query.search.trim() : '';
       const platform = typeof req.query.platform === 'string' ? req.query.platform.trim() : '';
       const status = typeof req.query.status === 'string' ? req.query.status.trim() : '';
+      const staff = typeof req.query.staff === 'string' ? req.query.staff.trim() : '';
 
       const query = buildStoreListQuery({
         search,
         platform,
         status,
       });
+
+      if (staff) {
+        const latestFollowUps = await db
+          .collection('followups')
+          .find(
+            {},
+            {
+              projection: {
+                storeId: 1,
+                staffName: 1,
+              },
+            },
+          )
+          .sort({ createdAt: -1 })
+          .toArray();
+
+        const matchedStoreIds = buildLatestStoreIdsByStaff(latestFollowUps, staff)
+          .filter((storeId) => ObjectId.isValid(storeId))
+          .map((storeId) => new ObjectId(storeId));
+
+        if (matchedStoreIds.length === 0) {
+          sendJson(res, 200, {
+            items: [],
+            page,
+            pageSize,
+            total: 0,
+            totalPages: 1,
+          });
+          return;
+        }
+
+        query._id = { $in: matchedStoreIds };
+      }
 
       const skip = (page - 1) * pageSize;
       const [stores, total] = await Promise.all([

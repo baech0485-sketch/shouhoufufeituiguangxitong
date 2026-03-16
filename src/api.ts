@@ -10,6 +10,7 @@ export interface StoreListQuery {
   search?: string;
   platform?: string;
   status?: string;
+  staff?: string;
 }
 
 export interface StoreListResponse {
@@ -97,6 +98,9 @@ export const storeApi = {
     }
     if (query.status) {
       params.set('status', query.status);
+    }
+    if (query.staff) {
+      params.set('staff', query.staff);
     }
 
     const queryString = params.toString();

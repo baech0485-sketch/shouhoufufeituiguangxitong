@@ -7,7 +7,6 @@ import {
   buildLatestFollowUpStaffMap,
   buildLatestPromotionStatusMap,
   buildRecordCountMap,
-  filterStoresByStaff,
 } from './store-list/storeListMetrics.js';
 import StoreListTable from './store-list/StoreListTable';
 
@@ -83,43 +82,21 @@ export default function StoreList({
           search: debouncedSearchTerm || undefined,
           platform: filterPlatform === '全部' ? undefined : filterPlatform,
           status: filterStatus === '全部' ? undefined : filterStatus,
+          staff: filterStaff === '全部' ? undefined : filterStaff,
         };
 
-        if (filterStaff === '全部') {
-          const response = await storeApi.list({
-            page,
-            pageSize: PAGE_SIZE,
-            ...query,
-          });
+        const response = await storeApi.list({
+          page,
+          pageSize: PAGE_SIZE,
+          ...query,
+        });
 
-          setStores(response.items);
-          setTotal(response.total);
-          setTotalPages(response.totalPages);
+        setStores(response.items);
+        setTotal(response.total);
+        setTotalPages(response.totalPages);
 
-          if (page > response.totalPages && response.totalPages > 0) {
-            setPage(response.totalPages);
-          }
-
-          return;
-        }
-
-        const allStores = await storeApi.listAll(query);
-        const filteredStores = filterStoresByStaff(
-          allStores,
-          filterStaff,
-          latestFollowUpStaffMap,
-        );
-        const filteredTotal = filteredStores.length;
-        const filteredTotalPages = Math.max(1, Math.ceil(filteredTotal / PAGE_SIZE));
-        const currentPage = filteredTotal === 0 ? 1 : Math.min(page, filteredTotalPages);
-        const startIndex = (currentPage - 1) * PAGE_SIZE;
-
-        setStores(filteredStores.slice(startIndex, startIndex + PAGE_SIZE));
-        setTotal(filteredTotal);
-        setTotalPages(filteredTotalPages);
-
-        if (currentPage !== page) {
-          setPage(currentPage);
+        if (page > response.totalPages && response.totalPages > 0) {
+          setPage(response.totalPages);
         }
       } catch (error) {
         const message = error instanceof Error ? error.message : '加载店铺列表失败';
@@ -135,7 +112,6 @@ export default function StoreList({
     filterPlatform,
     filterStaff,
     filterStatus,
-    latestFollowUpStaffMap,
     page,
     refreshKey,
   ]);
