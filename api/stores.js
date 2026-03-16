@@ -1,8 +1,13 @@
+import { ObjectId } from 'mongodb';
 import { getDb } from './_lib/mongodb.js';
 import { requireWriteAccess } from './_lib/auth.js';
 import { handleApiError, methodNotAllowed, readJsonBody, sendJson } from './_lib/http.js';
 import { mapStore } from './_lib/mappers.js';
 import { buildStoreListQuery } from './_lib/store-list-query.js';
+import {
+  deriveStoreStatus,
+  MANUAL_PROMOTING_STATUS,
+} from './_lib/store-status.js';
 import { parseRequiredTextFields } from './_lib/validation.js';
 
 function parsePositiveInt(value, defaultValue, maxValue = Number.MAX_SAFE_INTEGER) {
@@ -77,6 +82,7 @@ export default async function handler(req, res) {
         platform,
         openDate,
         status: '待跟进',
+        statusSource: 'derived',
         createdAt: now,
         updatedAt: now,
       };
@@ -90,5 +96,77 @@ export default async function handler(req, res) {
     return;
   }
 
-  methodNotAllowed(res, ['GET', 'POST']);
+  if (req.method === 'PATCH') {
+    try {
+      const body = await readJsonBody(req);
+      const id = typeof body?.id === 'string' ? body.id.trim() : '';
+      const operation = typeof body?.operation === 'string' ? body.operation.trim() : '';
+
+      if (!id || !operation) {
+        sendJson(res, 400, { message: '缺少必填字段：id/operation' });
+        return;
+      }
+
+      if (!ObjectId.isValid(id)) {
+        sendJson(res, 400, { message: 'id 格式不正确' });
+        return;
+      }
+
+      const db = await getDb();
+      const storeObjectId = new ObjectId(id);
+      const store = await db.collection('stores').findOne({ _id: storeObjectId });
+
+      if (!store) {
+        sendJson(res, 404, { message: '店铺不存在' });
+        return;
+      }
+
+      const now = new Date();
+
+      if (operation === 'mark-promoting') {
+        await db.collection('stores').updateOne(
+          { _id: storeObjectId },
+          {
+            $set: {
+              status: MANUAL_PROMOTING_STATUS,
+              statusSource: 'manual',
+              updatedAt: now,
+            },
+          },
+        );
+
+        sendJson(res, 200, mapStore({ ...store, status: MANUAL_PROMOTING_STATUS }));
+        return;
+      }
+
+      if (operation === 'restore-auto-status') {
+        const [rechargeRecord, followUpRecord] = await Promise.all([
+          db.collection('recharges').findOne({ storeId: id }, { projection: { _id: 1 } }),
+          db.collection('followups').findOne({ storeId: id }, { projection: { _id: 1 } }),
+        ]);
+        const status = deriveStoreStatus(Boolean(rechargeRecord), Boolean(followUpRecord));
+
+        await db.collection('stores').updateOne(
+          { _id: storeObjectId },
+          {
+            $set: {
+              status,
+              statusSource: 'derived',
+              updatedAt: now,
+            },
+          },
+        );
+
+        sendJson(res, 200, mapStore({ ...store, status }));
+        return;
+      }
+
+      sendJson(res, 400, { message: '不支持的店铺状态操作' });
+    } catch (error) {
+      handleApiError(res, error);
+    }
+    return;
+  }
+
+  methodNotAllowed(res, ['GET', 'POST', 'PATCH']);
 }

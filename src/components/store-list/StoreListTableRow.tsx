@@ -88,10 +88,12 @@ export default function StoreListTableRow({
               ? 'bg-slate-100 text-slate-700'
               : store.status === '已跟进'
                 ? 'bg-blue-100 text-blue-700'
+                : store.status === '已在推广'
+                  ? 'bg-violet-100 text-violet-700'
                 : 'bg-emerald-100 text-emerald-700'
           }`}
         >
-          {store.status === '已充值' && <Sparkles size={12} />}
+          {(store.status === '已充值' || store.status === '已在推广') && <Sparkles size={12} />}
           {store.status}
         </span>
       </td>

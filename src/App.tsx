@@ -17,6 +17,7 @@ export default function App() {
   const [storeListRefreshKey, setStoreListRefreshKey] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+  const [isUpdatingStoreStatus, setIsUpdatingStoreStatus] = useState(false);
 
   const staffOptions = useMemo(() => {
     return buildAfterSalesStaffOptions([
@@ -57,7 +58,9 @@ export default function App() {
         setFollowUps((prevFollowUps) => [createdFollowUp, ...prevFollowUps]);
         setStoreListRefreshKey((prevKey) => prevKey + 1);
         setSelectedStore((prevStore) =>
-          prevStore && prevStore.id === newFollowUp.storeId && prevStore.status === '待跟进'
+          prevStore
+          && prevStore.id === newFollowUp.storeId
+          && prevStore.status === '待跟进'
             ? { ...prevStore, status: '已跟进' }
             : prevStore,
         );
@@ -76,7 +79,9 @@ export default function App() {
         setRecharges((prevRecharges) => [createdRecharge, ...prevRecharges]);
         setStoreListRefreshKey((prevKey) => prevKey + 1);
         setSelectedStore((prevStore) =>
-          prevStore && prevStore.id === newRecharge.storeId
+          prevStore
+          && prevStore.id === newRecharge.storeId
+          && prevStore.status !== '已在推广'
             ? { ...prevStore, status: '已充值' }
             : prevStore,
         );
@@ -127,6 +132,44 @@ export default function App() {
     }
   };
 
+  const handleMarkStoreAsPromoting = async (storeId: string) => {
+    setErrorMessage('');
+    setIsUpdatingStoreStatus(true);
+    try {
+      const updatedStore = await storeApi.updateStatus({
+        id: storeId,
+        operation: 'mark-promoting',
+      });
+      setSelectedStore(updatedStore);
+      setStoreListRefreshKey((prevKey) => prevKey + 1);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '更新店铺状态失败';
+      setErrorMessage(message);
+      throw error;
+    } finally {
+      setIsUpdatingStoreStatus(false);
+    }
+  };
+
+  const handleRestoreStoreAutoStatus = async (storeId: string) => {
+    setErrorMessage('');
+    setIsUpdatingStoreStatus(true);
+    try {
+      const updatedStore = await storeApi.updateStatus({
+        id: storeId,
+        operation: 'restore-auto-status',
+      });
+      setSelectedStore(updatedStore);
+      setStoreListRefreshKey((prevKey) => prevKey + 1);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '恢复店铺自动状态失败';
+      setErrorMessage(message);
+      throw error;
+    } finally {
+      setIsUpdatingStoreStatus(false);
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen bg-slate-50 font-sans text-slate-900">
       <Sidebar currentView={currentView} onChangeView={setCurrentView} />
@@ -174,6 +217,9 @@ export default function App() {
           onAddRecharge={handleAddRecharge}
           onDeleteFollowUp={handleDeleteFollowUp}
           onDeleteRecharge={handleDeleteRecharge}
+          onMarkStoreAsPromoting={handleMarkStoreAsPromoting}
+          onRestoreStoreAutoStatus={handleRestoreStoreAutoStatus}
+          isUpdatingStoreStatus={isUpdatingStoreStatus}
           staffOptions={staffOptions}
         />
       )}

@@ -1,11 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Check, Copy, X } from 'lucide-react';
+import { Check, Copy, RotateCcw, TrendingUp, X } from 'lucide-react';
 import { Store } from '../../types';
 import { copyText, getStoreIdentityCopyTargets } from './storeDetailHeaderUtils.js';
 
 interface StoreDetailHeaderProps {
   store: Store;
   onClose: () => void;
+  onMarkPromoting: () => Promise<void>;
+  onRestoreAutoStatus: () => Promise<void>;
+  isUpdatingStatus: boolean;
 }
 
 function getStatusClass(status: Store['status']) {
@@ -15,10 +18,19 @@ function getStatusClass(status: Store['status']) {
   if (status === '已跟进') {
     return 'bg-blue-100 text-blue-700';
   }
+  if (status === '已在推广') {
+    return 'bg-violet-100 text-violet-700';
+  }
   return 'bg-emerald-100 text-emerald-700';
 }
 
-export default function StoreDetailHeader({ store, onClose }: StoreDetailHeaderProps) {
+export default function StoreDetailHeader({
+  store,
+  onClose,
+  onMarkPromoting,
+  onRestoreAutoStatus,
+  isUpdatingStatus,
+}: StoreDetailHeaderProps) {
   const copyTargets = useMemo(() => getStoreIdentityCopyTargets(store), [store]);
   const [copiedKey, setCopiedKey] = useState('');
   const [copyMessage, setCopyMessage] = useState('');
@@ -48,7 +60,7 @@ export default function StoreDetailHeader({ store, onClose }: StoreDetailHeaderP
   };
 
   return (
-    <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+    <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-6 py-4">
       <div>
         <div className="flex flex-wrap items-center gap-3">
           {copyTargets.map((target) => {
@@ -61,7 +73,11 @@ export default function StoreDetailHeader({ store, onClose }: StoreDetailHeaderP
                 className="group inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-left transition-colors hover:border-indigo-300 hover:bg-indigo-50"
                 title={`点击复制${target.copiedLabel}`}
               >
-                <span className={`font-bold ${target.key === 'name' ? 'text-xl text-slate-900' : 'text-sm text-slate-600'}`}>
+                <span
+                  className={`font-bold ${
+                    target.key === 'name' ? 'text-xl text-slate-900' : 'text-sm text-slate-600'
+                  }`}
+                >
                   {target.label}
                 </span>
                 {isCopied ? (
@@ -73,7 +89,7 @@ export default function StoreDetailHeader({ store, onClose }: StoreDetailHeaderP
             );
           })}
         </div>
-        <div className="flex items-center space-x-3 mt-2 text-sm text-slate-500">
+        <div className="mt-2 flex items-center space-x-3 text-sm text-slate-500">
           <span className="font-medium text-emerald-600">{store.platform}</span>
           <span>•</span>
           <span>开店日期 {store.openDate}</span>
@@ -81,16 +97,39 @@ export default function StoreDetailHeader({ store, onClose }: StoreDetailHeaderP
           <span className={`rounded-md px-2 py-0.5 text-xs font-medium ${getStatusClass(store.status)}`}>
             {store.status}
           </span>
-          {copyMessage ? <span className="text-indigo-600 font-medium">{copyMessage}</span> : null}
+          {copyMessage ? <span className="font-medium text-indigo-600">{copyMessage}</span> : null}
         </div>
       </div>
-      <button
-        type="button"
-        onClick={onClose}
-        className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
-      >
-        <X size={24} />
-      </button>
+      <div className="flex items-center gap-2">
+        {store.status === '已在推广' ? (
+          <button
+            type="button"
+            onClick={() => void onRestoreAutoStatus()}
+            disabled={isUpdatingStatus}
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <RotateCcw size={16} />
+            {isUpdatingStatus ? '恢复中...' : '恢复自动状态'}
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => void onMarkPromoting()}
+            disabled={isUpdatingStatus}
+            className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <TrendingUp size={16} />
+            {isUpdatingStatus ? '更新中...' : '标记已在推广'}
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={onClose}
+          className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+        >
+          <X size={24} />
+        </button>
+      </div>
     </div>
   );
 }

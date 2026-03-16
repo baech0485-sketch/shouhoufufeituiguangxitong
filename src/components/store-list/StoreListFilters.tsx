@@ -26,6 +26,7 @@ const STATUS_OPTIONS = [
   { label: '待跟进', value: '待跟进' },
   { label: '已跟进', value: '已跟进' },
   { label: '已充值', value: '已充值' },
+  { label: '已在推广', value: '已在推广' },
 ];
 
 export default function StoreListFilters({

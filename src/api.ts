@@ -33,6 +33,11 @@ export interface DeleteRecordResponse {
   storeStatus: StoreStatus;
 }
 
+export interface StoreStatusUpdatePayload {
+  id: string;
+  operation: 'mark-promoting' | 'restore-auto-status';
+}
+
 function buildWriteAuthHeaders(init?: RequestInit) {
   const method = (init?.method || 'GET').toUpperCase();
   if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
@@ -120,6 +125,12 @@ export const storeApi = {
   },
   listPlatforms() {
     return requestJson<StorePlatformItem[]>('/api/store-platforms');
+  },
+  updateStatus(payload: StoreStatusUpdatePayload) {
+    return requestJson<Store>('/api/stores', {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    });
   },
   create(payload: Omit<Store, 'id' | 'status' | 'storeCode'>) {
     return requestJson<Store>('/api/stores', {

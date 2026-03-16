@@ -1,7 +1,7 @@
 export type Platform = '美团餐饮' | '饿了么餐饮' | '美团外卖' | '淘宝闪购';
 export type CommunicationType = '未沟通' | '私聊' | '群聊';
 export type Intention = '高' | '中' | '低' | '未知';
-export type StoreStatus = '待跟进' | '已跟进' | '已充值';
+export type StoreStatus = '待跟进' | '已跟进' | '已充值' | '已在推广';
 
 export interface Store {
   id: string;

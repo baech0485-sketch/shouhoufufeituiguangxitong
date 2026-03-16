@@ -26,6 +26,9 @@ interface StoreDetailModalProps {
   onAddRecharge: (recharge: Omit<Recharge, 'id'>) => void;
   onDeleteFollowUp: (followUpId: string) => Promise<void>;
   onDeleteRecharge: (rechargeId: string) => Promise<void>;
+  onMarkStoreAsPromoting: (storeId: string) => Promise<void>;
+  onRestoreStoreAutoStatus: (storeId: string) => Promise<void>;
+  isUpdatingStoreStatus: boolean;
   staffOptions: string[];
 }
 
@@ -38,6 +41,9 @@ export default function StoreDetailModal({
   onAddRecharge,
   onDeleteFollowUp,
   onDeleteRecharge,
+  onMarkStoreAsPromoting,
+  onRestoreStoreAutoStatus,
+  isUpdatingStoreStatus,
   staffOptions,
 }: StoreDetailModalProps) {
   const paneClassNames = getStoreDetailModalPaneClassNames();
@@ -137,7 +143,13 @@ export default function StoreDetailModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm animate-fade-in">
       <div className={`${getStoreDetailModalContainerClassName()} animate-modal-in`}>
-        <StoreDetailHeader store={store} onClose={onClose} />
+        <StoreDetailHeader
+          store={store}
+          onClose={onClose}
+          onMarkPromoting={() => onMarkStoreAsPromoting(store.id)}
+          onRestoreAutoStatus={() => onRestoreStoreAutoStatus(store.id)}
+          isUpdatingStatus={isUpdatingStoreStatus}
+        />
         <div className="flex flex-1 overflow-hidden">
           <div className={paneClassNames.historyPane}>
             <StoreHistoryPanel
