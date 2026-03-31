@@ -39,6 +39,13 @@ export interface StoreStatusUpdatePayload {
   operation: 'mark-promoting' | 'restore-auto-status';
 }
 
+export interface CreateStorePayload {
+  name: string;
+  merchantId: string;
+  platform: Store['platform'];
+  openDate?: string;
+}
+
 function buildWriteAuthHeaders(init?: RequestInit) {
   const method = (init?.method || 'GET').toUpperCase();
   if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
@@ -136,7 +143,7 @@ export const storeApi = {
       body: JSON.stringify(payload),
     });
   },
-  create(payload: Omit<Store, 'id' | 'status' | 'storeCode'>) {
+  create(payload: CreateStorePayload) {
     return requestJson<Store>('/api/stores', {
       method: 'POST',
       body: JSON.stringify(payload),

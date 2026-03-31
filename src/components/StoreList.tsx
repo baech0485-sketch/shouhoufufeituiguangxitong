@@ -1,6 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { Plus } from 'lucide-react';
+import type { CreateStorePayload } from '../api';
 import { storeApi } from '../api';
 import { FollowUp, Recharge, Store } from '../types';
+import StoreEntry from './StoreEntry';
 import StoreListPagination from './StoreListPagination';
 import StoreListFilters from './store-list/StoreListFilters';
 import {
@@ -14,6 +17,7 @@ const PAGE_SIZE = 10;
 
 interface StoreListProps {
   onSelectStore: (store: Store) => void;
+  onAddStore: (store: CreateStorePayload) => Promise<void>;
   refreshKey: number;
   followUps: FollowUp[];
   recharges: Recharge[];
@@ -22,11 +26,13 @@ interface StoreListProps {
 
 export default function StoreList({
   onSelectStore,
+  onAddStore,
   refreshKey,
   followUps,
   recharges,
   staffOptions,
 }: StoreListProps) {
+  const [isStoreEntryOpen, setIsStoreEntryOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [filterPlatform, setFilterPlatform] = useState('全部');
@@ -126,7 +132,26 @@ export default function StoreList({
           <h2 className="text-2xl font-bold text-slate-900">店铺列表</h2>
           <p className="mt-1 text-slate-500">每页展示 10 条，售后筛选开启后会自动按全部结果筛选并分页</p>
         </div>
+        <button
+          type="button"
+          onClick={() => setIsStoreEntryOpen((prev) => !prev)}
+          className="inline-flex items-center justify-center gap-2 self-start rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-700"
+        >
+          <Plus size={18} />
+          <span>{isStoreEntryOpen ? '收起录入表单' : '新增店铺录入'}</span>
+        </button>
       </div>
+
+      {isStoreEntryOpen && (
+        <StoreEntry
+          onAddStore={onAddStore}
+          onSuccess={() => {
+            setPage(1);
+            setIsStoreEntryOpen(false);
+          }}
+          onCancel={() => setIsStoreEntryOpen(false)}
+        />
+      )}
 
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <StoreListFilters

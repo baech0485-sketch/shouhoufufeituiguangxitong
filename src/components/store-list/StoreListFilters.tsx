@@ -1,5 +1,6 @@
 import React from 'react';
 import { Filter, Search, UserRound } from 'lucide-react';
+import { STORE_PLATFORM_FILTER_OPTIONS } from '../../constants/storePlatforms';
 import SelectField from '../ui/SelectField';
 import TextField from '../ui/TextField';
 
@@ -14,12 +15,6 @@ interface StoreListFiltersProps {
   onFilterStatusChange: (value: string) => void;
   onFilterStaffChange: (value: string) => void;
 }
-
-const PLATFORM_OPTIONS = [
-  { label: '全部平台', value: '全部' },
-  { label: '美团餐饮', value: '美团餐饮' },
-  { label: '饿了么餐饮', value: '饿了么餐饮' },
-];
 
 const STATUS_OPTIONS = [
   { label: '全部状态', value: '全部' },
@@ -63,7 +58,7 @@ export default function StoreListFilters({
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:flex xl:flex-wrap">
           <SelectField
             value={filterPlatform}
-            options={PLATFORM_OPTIONS}
+            options={STORE_PLATFORM_FILTER_OPTIONS}
             onChange={onFilterPlatformChange}
             leadingIcon={<Filter size={18} />}
             containerClassName="min-w-[168px]"

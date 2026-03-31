@@ -1,40 +1,73 @@
 import React, { useState } from 'react';
-import { Store, Platform } from '../types';
-import { Save, CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Save, Store as StoreIcon } from 'lucide-react';
+import type { CreateStorePayload } from '../api';
+import { STORE_PLATFORM_OPTIONS } from '../constants/storePlatforms';
+import { Platform } from '../types';
 
 interface StoreEntryProps {
-  onAddStore: (store: Omit<Store, 'id' | 'status' | 'storeCode'>) => void;
+  onAddStore: (store: CreateStorePayload) => Promise<void>;
+  onSuccess?: () => void;
+  onCancel: () => void;
 }
 
-export default function StoreEntry({ onAddStore }: StoreEntryProps) {
+export default function StoreEntry({
+  onAddStore,
+  onSuccess,
+  onCancel,
+}: StoreEntryProps) {
   const [name, setName] = useState('');
+  const [merchantId, setMerchantId] = useState('');
   const [platform, setPlatform] = useState<Platform>('美团餐饮');
-  const [openDate, setOpenDate] = useState(new Date().toISOString().split('T')[0]);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim() || !merchantId.trim()) {
+      return;
+    }
 
-    onAddStore({
-      name,
-      platform,
-      openDate,
-    });
+    setIsSubmitting(true);
 
-    setName('');
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 3000);
+    try {
+      await onAddStore({
+        name: name.trim(),
+        merchantId: merchantId.trim(),
+        platform,
+      });
+
+      setName('');
+      setMerchantId('');
+      setShowSuccess(true);
+      window.setTimeout(() => setShowSuccess(false), 3000);
+      onSuccess?.();
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-slate-900">每日开单店铺录入</h2>
-        <p className="text-slate-500 mt-1">录入新开店铺并同步到云数据库</p>
+    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50/80 px-6 py-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600">
+            <StoreIcon size={18} />
+          </div>
+          <div>
+            <h3 className="text-base font-semibold text-slate-900">新增店铺录入</h3>
+            <p className="mt-1 text-sm text-slate-500">录入店铺名称、商家ID和平台后立即写入云端</p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:border-slate-300 hover:bg-white hover:text-slate-900"
+        >
+          取消
+        </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 md:p-8">
+      <div className="p-6 md:p-8">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-2">
@@ -52,54 +85,59 @@ export default function StoreEntry({ onAddStore }: StoreEntryProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              所属平台
-            </label>
-            <div className="grid grid-cols-2 gap-4">
-              {(['美团餐饮', '饿了么餐饮', '美团外卖', '淘宝闪购'] as Platform[]).map((p) => (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => setPlatform(p)}
-                  className={`px-4 py-3 rounded-lg border font-medium transition-all ${
-                    platform === p
-                      ? 'bg-indigo-50 text-indigo-700 shadow-sm ring-1 ring-indigo-200/50'
-                      : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
-                  }`}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="openDate" className="block text-sm font-medium text-slate-700 mb-2">
-              开单日期
+            <label htmlFor="merchantId" className="mb-2 block text-sm font-medium text-slate-700">
+              商家ID
             </label>
             <input
-              type="date"
-              id="openDate"
-              value={openDate}
-              onChange={(e) => setOpenDate(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
+              type="text"
+              id="merchantId"
+              value={merchantId}
+              onChange={(e) => setMerchantId(e.target.value)}
+              className="w-full rounded-lg border border-slate-200 px-4 py-3 outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+              placeholder="请输入商家ID"
               required
             />
           </div>
 
-          <div className="pt-4">
+          <div>
+            <label htmlFor="platform" className="block text-sm font-medium text-slate-700 mb-2">
+              所属平台
+            </label>
+            <select
+              id="platform"
+              value={platform}
+              onChange={(e) => setPlatform(e.target.value as Platform)}
+              className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+            >
+              {STORE_PLATFORM_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="rounded-lg border border-slate-200 px-5 py-3 text-sm font-medium text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"
+            >
+              关闭
+            </button>
             <button
               type="submit"
-              className="w-full flex items-center justify-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+              disabled={isSubmitting}
+              className="flex items-center justify-center space-x-2 rounded-lg bg-indigo-600 px-6 py-3 font-medium text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-400"
             >
               <Save size={20} />
-              <span>确认录入</span>
+              <span>{isSubmitting ? '录入中...' : '确认录入'}</span>
             </button>
           </div>
         </form>
 
         {showSuccess && (
-          <div className="mt-4 p-4 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center space-x-3 text-emerald-700 animate-slide-up">
+          <div className="mt-4 flex items-center space-x-3 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-emerald-700 animate-slide-up">
             <CheckCircle2 size={20} />
             <span className="font-medium">店铺录入成功！</span>
           </div>

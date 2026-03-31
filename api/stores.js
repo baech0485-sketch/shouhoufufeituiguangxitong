@@ -19,6 +19,10 @@ function parsePositiveInt(value, defaultValue, maxValue = Number.MAX_SAFE_INTEGE
   return Math.min(parsed, maxValue);
 }
 
+function getDefaultOpenDate(now = new Date()) {
+  return now.toISOString().slice(0, 10);
+}
+
 export default async function handler(req, res) {
   if (!requireWriteAccess(req, res)) {
     return;
@@ -102,20 +106,26 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     try {
       const body = await readJsonBody(req);
-      const required = parseRequiredTextFields(body, ['name', 'platform', 'openDate']);
+      const required = parseRequiredTextFields(body, ['name', 'platform']);
       if (!required.ok) {
         sendJson(res, 400, {
           message: `缺少必填字段：${required.missingFields.join('/')}`,
         });
         return;
       }
-      const { name, platform, openDate } = required.values;
+      const { name, platform } = required.values;
+      const merchantId =
+        typeof body?.merchantId === 'string' ? body.merchantId.trim() : '';
 
       const now = new Date();
       const storeDoc = {
+        merchantId,
         name,
         platform,
-        openDate,
+        openDate:
+          typeof body?.openDate === 'string' && body.openDate.trim()
+            ? body.openDate.trim()
+            : getDefaultOpenDate(now),
         status: '待跟进',
         statusSource: 'derived',
         createdAt: now,

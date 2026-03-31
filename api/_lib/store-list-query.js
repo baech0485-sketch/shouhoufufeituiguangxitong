@@ -1,4 +1,9 @@
-export const ALLOWED_STORE_LIST_PLATFORMS = ['美团餐饮', '饿了么餐饮'];
+export const ALLOWED_STORE_LIST_PLATFORMS = [
+  '美团餐饮',
+  '饿了么餐饮',
+  '美团外卖',
+  '淘宝闪购',
+];
 
 function escapeRegex(input) {
   return input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -15,7 +20,11 @@ export function buildStoreListQuery({
   const query = {};
 
   if (trimmedSearch) {
-    query.name = { $regex: escapeRegex(trimmedSearch), $options: 'i' };
+    const escapedSearch = escapeRegex(trimmedSearch);
+    query.$or = [
+      { name: { $regex: escapedSearch, $options: 'i' } },
+      { merchantId: { $regex: escapedSearch, $options: 'i' } },
+    ];
   }
 
   if (trimmedPlatform) {
