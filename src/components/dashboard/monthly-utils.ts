@@ -16,19 +16,68 @@ export interface StaffPerformanceItem {
   conversionRate: number;
 }
 
+interface DatedRecord {
+  date: string;
+}
+
 export function getMonthKey(dateText: string) {
   return /^\d{4}-\d{2}-\d{2}$/.test(dateText) ? dateText.slice(0, 7) : '';
 }
 
-export function getAvailableMonths(recharges: Recharge[]) {
-  const months = new Set<string>();
-  recharges.forEach((item) => {
-    const month = getMonthKey(item.date);
-    if (month) {
-      months.add(month);
+function parseMonthIndex(monthKey: string) {
+  if (!/^\d{4}-\d{2}$/.test(monthKey)) {
+    return null;
+  }
+
+  const [yearText, monthText] = monthKey.split('-');
+  const year = Number.parseInt(yearText, 10);
+  const month = Number.parseInt(monthText, 10);
+  if (!Number.isFinite(year) || !Number.isFinite(month) || month < 1 || month > 12) {
+    return null;
+  }
+
+  return year * 12 + (month - 1);
+}
+
+function formatMonthIndex(monthIndex: number) {
+  const year = Math.floor(monthIndex / 12);
+  const month = (monthIndex % 12) + 1;
+  return `${year}-${String(month).padStart(2, '0')}`;
+}
+
+export function getCurrentMonthKey(now = new Date()) {
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+}
+
+export function getAvailableMonths(records: DatedRecord[], now = new Date()) {
+  const monthIndexes = new Set<number>();
+
+  records.forEach((item) => {
+    const monthIndex = parseMonthIndex(getMonthKey(item.date));
+    if (monthIndex !== null) {
+      monthIndexes.add(monthIndex);
     }
   });
-  return Array.from(months).sort((a, b) => b.localeCompare(a));
+
+  const currentMonthIndex = parseMonthIndex(getCurrentMonthKey(now));
+  if (currentMonthIndex !== null) {
+    monthIndexes.add(currentMonthIndex);
+  }
+
+  if (monthIndexes.size === 0) {
+    return [];
+  }
+
+  const sortedMonthIndexes = Array.from(monthIndexes).sort((left, right) => left - right);
+  const startMonthIndex = sortedMonthIndexes[0];
+  const endMonthIndex = sortedMonthIndexes[sortedMonthIndexes.length - 1];
+  const months = [];
+
+  for (let monthIndex = endMonthIndex; monthIndex >= startMonthIndex; monthIndex -= 1) {
+    months.push(formatMonthIndex(monthIndex));
+  }
+
+  return months;
 }
 
 export function buildDailyTrendData(recharges: Recharge[], monthKey: string): DailyTrendItem[] {

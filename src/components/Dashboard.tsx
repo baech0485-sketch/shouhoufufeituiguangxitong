@@ -19,6 +19,7 @@ import StaffPerformanceTable from './dashboard/StaffPerformanceTable';
 import {
   buildDailyTrendData,
   buildStaffPerformance,
+  getCurrentMonthKey,
   getAvailableMonths,
   getMonthKey,
 } from './dashboard/monthly-utils';
@@ -57,15 +58,21 @@ export default function Dashboard({
     [followUps, selectedPlatform, storePlatformMap],
   );
   const availableMonths = useMemo(
-    () => getAvailableMonths(filteredRecharges),
-    [filteredRecharges],
+    () => getAvailableMonths([...filteredRecharges, ...filteredFollowUps]),
+    [filteredFollowUps, filteredRecharges],
   );
 
   useEffect(() => {
-    const currentMonth = new Date().toISOString().slice(0, 7);
+    const currentMonth = getCurrentMonthKey();
     if (availableMonths.includes(selectedMonth)) {
       return;
     }
+
+    if (availableMonths.includes(currentMonth)) {
+      setSelectedMonth(currentMonth);
+      return;
+    }
+
     setSelectedMonth(availableMonths[0] || currentMonth);
   }, [availableMonths, selectedMonth]);
 
