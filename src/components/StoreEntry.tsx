@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
-import { CheckCircle2, Save, Store as StoreIcon } from 'lucide-react';
+import { CheckCircle2, Store as StoreIcon } from 'lucide-react';
+
 import type { CreateStorePayload } from '../api';
 import { STORE_PLATFORM_OPTIONS } from '../constants/storePlatforms';
 import { Platform } from '../types';
+import AppButton from './ui/AppButton';
+import IconBadge from './ui/IconBadge';
+import SurfaceCard from './ui/SurfaceCard';
 
 interface StoreEntryProps {
   onAddStore: (store: CreateStorePayload) => Promise<void>;
@@ -21,21 +25,18 @@ export default function StoreEntry({
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     if (!name.trim() || !merchantId.trim()) {
       return;
     }
-
     setIsSubmitting(true);
-
     try {
       await onAddStore({
         name: name.trim(),
         merchantId: merchantId.trim(),
         platform,
       });
-
       setName('');
       setMerchantId('');
       setShowSuccess(true);
@@ -47,102 +48,92 @@ export default function StoreEntry({
   };
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50/80 px-6 py-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600">
-            <StoreIcon size={18} />
-          </div>
+    <SurfaceCard className="p-6 sm:p-8">
+      <div className="flex flex-col gap-4 border-b border-[var(--color-border-subtle)] pb-5 md:flex-row md:items-start md:justify-between">
+        <div className="flex items-start gap-4">
+          <IconBadge tone="brand" icon={<StoreIcon size={18} />} />
           <div>
-            <h3 className="text-base font-semibold text-slate-900">新增店铺录入</h3>
-            <p className="mt-1 text-sm text-slate-500">录入店铺名称、商家ID和平台后立即写入云端</p>
+            <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">新增店铺录入</h3>
+            <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+              录入店铺名称、商家 ID 和平台后立即写入云端。
+            </p>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:border-slate-300 hover:bg-white hover:text-slate-900"
-        >
+        <AppButton variant="secondary" onClick={onCancel}>
           取消
-        </button>
+        </AppButton>
       </div>
 
-      <div className="p-6 md:p-8">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-2">
-              店铺名称
-            </label>
-            <input
-              type="text"
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
-              placeholder="请输入店铺名称"
-              required
-            />
-          </div>
+      <form onSubmit={handleSubmit} className="mt-6 grid gap-5 xl:grid-cols-3">
+        <FormItem label="店铺名称">
+          <input
+            type="text"
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            className="h-12 w-full rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-canvas)] px-4 text-sm font-medium text-[var(--color-text-primary)] outline-none transition-all focus:border-[var(--color-brand-primary)] focus:ring-2 focus:ring-[color:var(--color-brand-ring)]"
+            placeholder="请输入店铺名称"
+            required
+          />
+        </FormItem>
+        <FormItem label="商家ID">
+          <input
+            type="text"
+            value={merchantId}
+            onChange={(event) => setMerchantId(event.target.value)}
+            className="h-12 w-full rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-canvas)] px-4 text-sm font-medium text-[var(--color-text-primary)] outline-none transition-all focus:border-[var(--color-brand-primary)] focus:ring-2 focus:ring-[color:var(--color-brand-ring)]"
+            placeholder="请输入商家ID"
+            required
+          />
+        </FormItem>
+        <FormItem label="所属平台">
+          <select
+            value={platform}
+            onChange={(event) => setPlatform(event.target.value as Platform)}
+            className="h-12 w-full rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-canvas)] px-4 text-sm font-medium text-[var(--color-text-primary)] outline-none transition-all focus:border-[var(--color-brand-primary)] focus:ring-2 focus:ring-[color:var(--color-brand-ring)]"
+          >
+            {STORE_PLATFORM_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </FormItem>
 
-          <div>
-            <label htmlFor="merchantId" className="mb-2 block text-sm font-medium text-slate-700">
-              商家ID
-            </label>
-            <input
-              type="text"
-              id="merchantId"
-              value={merchantId}
-              onChange={(e) => setMerchantId(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 px-4 py-3 outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-              placeholder="请输入商家ID"
-              required
-            />
-          </div>
-
-          <div>
-            <label htmlFor="platform" className="block text-sm font-medium text-slate-700 mb-2">
-              所属平台
-            </label>
-            <select
-              id="platform"
-              value={platform}
-              onChange={(e) => setPlatform(e.target.value as Platform)}
-              className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-            >
-              {STORE_PLATFORM_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-end">
-            <button
-              type="button"
-              onClick={onCancel}
-              className="rounded-lg border border-slate-200 px-5 py-3 text-sm font-medium text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"
-            >
+        <div className="xl:col-span-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+            <AppButton variant="secondary" onClick={onCancel}>
               关闭
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="flex items-center justify-center space-x-2 rounded-lg bg-indigo-600 px-6 py-3 font-medium text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-400"
-            >
-              <Save size={20} />
-              <span>{isSubmitting ? '录入中...' : '确认录入'}</span>
-            </button>
+            </AppButton>
+            <AppButton type="submit" disabled={isSubmitting}>
+              {isSubmitting ? '录入中...' : '确认录入'}
+            </AppButton>
           </div>
-        </form>
+        </div>
+      </form>
 
-        {showSuccess && (
-          <div className="mt-4 flex items-center space-x-3 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-emerald-700 animate-slide-up">
-            <CheckCircle2 size={20} />
-            <span className="font-medium">店铺录入成功！</span>
-          </div>
-        )}
-      </div>
-    </div>
+      {showSuccess && (
+        <div className="mt-5 flex items-center gap-3 rounded-[var(--radius-lg)] border border-emerald-200 bg-[var(--color-success-soft)] px-4 py-3 text-sm font-medium text-[var(--color-success)]">
+          <CheckCircle2 size={18} />
+          店铺录入成功！
+        </div>
+      )}
+    </SurfaceCard>
+  );
+}
+
+function FormItem({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <label className="block">
+      <span className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">
+        {label}
+      </span>
+      {children}
+    </label>
   );
 }

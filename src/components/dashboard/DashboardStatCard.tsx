@@ -1,35 +1,40 @@
 import React from 'react';
 
+import AppPill from '../ui/AppPill';
+import IconBadge from '../ui/IconBadge';
+import SurfaceCard from '../ui/SurfaceCard';
+
 interface DashboardStatCardProps {
   icon: React.ReactNode;
   title: string;
   value: number | string;
-  iconClassName: string;
-  cardClassName: string;
+  detail: string;
+  tone?: 'brand' | 'teal' | 'success' | 'warning';
+  detailTone?: 'brandSoft' | 'successSoft' | 'warningSoft' | 'default';
 }
 
 export default function DashboardStatCard({
   icon,
   title,
   value,
-  iconClassName,
-  cardClassName,
+  detail,
+  tone = 'brand',
+  detailTone = 'brandSoft',
 }: DashboardStatCardProps) {
   return (
-    <div
-      className={`rounded-xl border bg-gradient-to-br to-white p-6 shadow-card transition-shadow hover:shadow-card-hover ${cardClassName}`}
-    >
-      <div className="flex items-center space-x-4">
-        <div
-          className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl text-white shadow-lg ${iconClassName}`}
-        >
-          {icon}
+    <SurfaceCard className="p-6 transition-shadow hover:shadow-[var(--shadow-card-hover)]">
+      <div className="space-y-5">
+        <div className="flex items-start gap-3">
+          <IconBadge tone={tone} icon={icon} />
+          <div>
+            <p className="text-xs text-[var(--color-text-muted)]">{title}</p>
+            <p className="mt-2 text-[32px] font-bold leading-none tracking-[-0.03em] text-[var(--color-text-primary)]">
+              {value}
+            </p>
+          </div>
         </div>
-        <div>
-          <p className="text-sm font-medium text-slate-600">{title}</p>
-          <p className="mt-1 text-3xl font-bold text-slate-900">{value}</p>
-        </div>
+        <AppPill tone={detailTone}>{detail}</AppPill>
       </div>
-    </div>
+    </SurfaceCard>
   );
 }

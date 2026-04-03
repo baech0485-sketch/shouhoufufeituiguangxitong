@@ -1,6 +1,8 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
+import AppButton from './ui/AppButton';
+
 interface StoreListPaginationProps {
   page: number;
   totalPages: number;
@@ -23,30 +25,30 @@ export default function StoreListPagination({
   onNextPage,
 }: StoreListPaginationProps) {
   return (
-    <div className="px-6 py-4 border-t border-slate-200 bg-slate-50/50 flex flex-col md:flex-row md:items-center justify-between gap-3">
-      <p className="text-sm text-slate-600 font-medium">
-        显示 <span className="text-indigo-600 font-semibold">{start}-{end}</span> 条，共 <span className="text-slate-900 font-semibold">{total}</span> 条
+    <div className="flex flex-col gap-3 border-t border-[var(--color-border-subtle)] bg-transparent px-6 py-4 md:flex-row md:items-center md:justify-between">
+      <p className="text-sm text-[var(--color-text-muted)]">
+        显示 {start}-{end} 条，共 {total} 条
       </p>
-      <div className="flex items-center gap-3">
-        <button
-          onClick={onPrevPage}
-          disabled={page <= 1 || isLoading}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white hover:border-indigo-300 hover:text-indigo-600 transition-all shadow-sm"
-        >
-          <ChevronLeft size={16} />
-          上一页
-        </button>
-        <span className="inline-flex items-center justify-center rounded-lg bg-indigo-50 px-3 py-1.5 text-sm font-semibold text-indigo-600 ring-1 ring-indigo-200/50 min-w-[100px] text-center">
+      <div className="flex flex-wrap items-center gap-3">
+        <span className="inline-flex rounded-[var(--radius-lg)] bg-[var(--color-brand-soft)] px-3 py-2 text-sm font-semibold text-[var(--color-brand-primary)]">
           第 {page} / {Math.max(1, totalPages)} 页
         </span>
-        <button
+        <AppButton
+          variant="secondary"
+          icon={<ChevronLeft size={16} />}
+          onClick={onPrevPage}
+          disabled={page <= 1 || isLoading}
+        >
+          上一页
+        </AppButton>
+        <AppButton
+          variant="secondary"
+          icon={<ChevronRight size={16} />}
           onClick={onNextPage}
           disabled={page >= totalPages || isLoading || total === 0}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white hover:border-indigo-300 hover:text-indigo-600 transition-all shadow-sm"
         >
           下一页
-          <ChevronRight size={16} />
-        </button>
+        </AppButton>
       </div>
     </div>
   );

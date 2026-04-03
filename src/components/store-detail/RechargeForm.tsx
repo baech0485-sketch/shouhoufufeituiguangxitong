@@ -1,5 +1,7 @@
 import React from 'react';
-import { DollarSign, Plus } from 'lucide-react';
+
+import AppButton from '../ui/AppButton';
+import SelectField from '../ui/SelectField';
 import ScreenshotUploadField from './ScreenshotUploadField';
 
 interface RechargeFormProps {
@@ -34,70 +36,71 @@ export default function RechargeForm({
   onSubmit,
 }: RechargeFormProps) {
   return (
-    <div>
-      <h4 className="mb-4 flex items-center text-lg font-bold text-slate-900">
-        <DollarSign size={20} className="mr-2 text-indigo-500" />
-        新增充值记录
-      </h4>
-      <form onSubmit={onSubmit} className="space-y-4">
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">充值金额（元）</label>
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            value={amount}
-            onChange={(event) => onAmountChange(event.target.value)}
-            placeholder="0.00"
-            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-lg font-medium outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">充值日期</label>
-          <input
-            type="date"
-            value={rechargeDate}
-            onChange={(event) => onRechargeDateChange(event.target.value)}
-            className="w-full rounded-lg border border-slate-200 px-3 py-2 outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">售后人员</label>
-          <select
-            value={rechargeStaff}
-            onChange={(event) => onRechargeStaffChange(event.target.value)}
-            className="w-full rounded-lg border border-slate-200 px-3 py-2 outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-            required
-          >
-            {staffOptions.map((option) => (
-              <option key={`recharge-${option}`} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <ScreenshotUploadField
-          label="充值截图"
-          screenshotName={screenshotName}
-          screenshotPreviewUrl={screenshotPreviewUrl}
-          screenshotError={screenshotError}
-          onFileChange={onScreenshotChange}
-          onRemove={onScreenshotRemove}
+    <form onSubmit={onSubmit} className="space-y-5">
+      <div className="grid gap-4 xl:grid-cols-3">
+        <InputField
+          label="充值金额（元）"
+          value={amount}
+          onChange={onAmountChange}
+          placeholder="0.00"
+          type="number"
         />
+        <InputField
+          label="充值日期"
+          value={rechargeDate}
+          onChange={onRechargeDateChange}
+          type="date"
+        />
+        <SelectField
+          value={rechargeStaff}
+          options={staffOptions.map((option) => ({ label: option, value: option }))}
+          onChange={onRechargeStaffChange}
+          label="售后人员"
+        />
+      </div>
 
-        <button
-          type="submit"
-          className="mt-4 flex w-full items-center justify-center space-x-2 rounded-lg bg-indigo-600 px-4 py-2.5 font-medium text-white transition-colors hover:bg-indigo-700"
-        >
-          <Plus size={18} />
-          <span>保存充值记录</span>
-        </button>
-      </form>
-    </div>
+      <ScreenshotUploadField
+        label="充值截图"
+        screenshotName={screenshotName}
+        screenshotPreviewUrl={screenshotPreviewUrl}
+        screenshotError={screenshotError}
+        onFileChange={onScreenshotChange}
+        onRemove={onScreenshotRemove}
+      />
+
+      <div className="flex justify-end">
+        <AppButton type="submit">提交充值记录</AppButton>
+      </div>
+    </form>
+  );
+}
+
+function InputField({
+  label,
+  value,
+  onChange,
+  placeholder = '',
+  type = 'text',
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  type?: string;
+}) {
+  return (
+    <label className="block">
+      <span className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">
+        {label}
+      </span>
+      <input
+        type={type}
+        value={value}
+        placeholder={placeholder}
+        onChange={(event) => onChange(event.target.value)}
+        className="h-12 w-full rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-canvas)] px-4 text-sm font-medium text-[var(--color-text-primary)] outline-none transition-all focus:border-[var(--color-brand-primary)] focus:ring-2 focus:ring-[color:var(--color-brand-ring)]"
+        required
+      />
+    </label>
   );
 }

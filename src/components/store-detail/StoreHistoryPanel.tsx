@@ -1,8 +1,18 @@
-import React from 'react';
-import { Calendar, Trash2, User } from 'lucide-react';
+import React, { useState } from 'react';
+import { Trash2 } from 'lucide-react';
+
 import { FollowUp, Recharge } from '../../types';
 import { normalizeAfterSalesStaffName } from '../../utils/afterSalesStaff.js';
 import { getPromotionDecisionLabel } from '../../utils/promotionEligibility.js';
+import AppIcon from '../ui/AppIcon';
+import AppPill from '../ui/AppPill';
+import IconBadge from '../ui/IconBadge';
+import StoreHistoryPreviewDialog from './StoreHistoryPreviewDialog';
+import { getRechargeScreenshotPreview } from './storeHistoryMedia.js';
+import {
+  closeStoreHistoryPreview,
+  openStoreHistoryPreview,
+} from './storeHistoryPreviewState.js';
 
 export type StoreDetailTab = 'followUp' | 'recharge';
 
@@ -17,19 +27,6 @@ interface StoreHistoryPanelProps {
   onDeleteRecharge: (id: string) => Promise<void>;
 }
 
-function getIntentionClass(intention: FollowUp['intention']) {
-  if (intention === '高') {
-    return 'bg-red-100 text-red-700';
-  }
-  if (intention === '中') {
-    return 'bg-orange-100 text-orange-700';
-  }
-  if (intention === '低') {
-    return 'bg-blue-100 text-blue-700';
-  }
-  return 'bg-slate-100 text-slate-700';
-}
-
 export default function StoreHistoryPanel({
   activeTab,
   onTabChange,
@@ -40,150 +37,198 @@ export default function StoreHistoryPanel({
   onDeleteFollowUp,
   onDeleteRecharge,
 }: StoreHistoryPanelProps) {
+  const [previewState, setPreviewState] = useState(closeStoreHistoryPreview());
+  const summaryText =
+    activeTab === 'followUp'
+      ? `跟进 ${followUps.length} 次 / 充值 ${recharges.length} 次 / 当前以${followUps.length > 0 ? '跟进' : '待跟进'}为主`
+      : `充值 ${recharges.length} 次 / 最近一次金额 ${recharges[0]?.amount ?? 0} 元`;
+
   return (
-    <div className="flex h-full w-full flex-col border-r border-slate-200 bg-slate-50/50">
-      <div className="flex space-x-2 border-b border-slate-200 p-4">
-        <button
-          type="button"
-          onClick={() => onTabChange('followUp')}
-          className={`flex-1 rounded-lg py-2 text-sm font-medium transition-all ${
-            activeTab === 'followUp'
-              ? 'bg-indigo-50 text-indigo-700 shadow-sm ring-1 ring-indigo-200/50'
-              : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'
-          }`}
-        >
-          跟进记录 ({followUps.length})
-        </button>
-        <button
-          type="button"
-          onClick={() => onTabChange('recharge')}
-          className={`flex-1 rounded-lg py-2 text-sm font-medium transition-all ${
-            activeTab === 'recharge'
-              ? 'bg-indigo-50 text-indigo-700 shadow-sm ring-1 ring-indigo-200/50'
-              : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'
-          }`}
-        >
-          充值记录 ({recharges.length})
-        </button>
+    <div className="flex h-full w-full flex-col rounded-[var(--radius-xl)] bg-[var(--color-bg-canvas)] p-4">
+      <div>
+        <h4 className="text-lg font-semibold text-[var(--color-text-primary)]">历史记录</h4>
+        <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+          跟进记录与充值记录集中展示，便于回溯状态变化与沟通动作。
+        </p>
       </div>
 
-      <div className="flex-1 space-y-4 overflow-y-auto p-4">
+      <div className="mt-4 flex gap-2">
+        <TabButton
+          active={activeTab === 'followUp'}
+          label={`跟进记录 (${followUps.length})`}
+          onClick={() => onTabChange('followUp')}
+        />
+        <TabButton
+          active={activeTab === 'recharge'}
+          label={`充值记录 (${recharges.length})`}
+          onClick={() => onTabChange('recharge')}
+        />
+      </div>
+
+      <div className="mt-4 flex-1 space-y-4 overflow-y-auto pr-1">
         {activeTab === 'followUp' ? (
           followUps.length > 0 ? (
-            followUps.map((record) => (
-              <div
-                key={record.id}
-                className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
-              >
-                <div className="mb-2 flex items-start justify-between">
-                  <div className="flex items-center space-x-2 text-sm font-medium text-slate-900">
-                    <User size={16} className="text-slate-400" />
-                    <span>{normalizeAfterSalesStaffName(record.staffName)}</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <div className="flex items-center space-x-1 text-xs text-slate-500">
-                      <Calendar size={14} />
-                      <span>{record.date}</span>
+            followUps.map((record) => {
+              const promotionLabel = getPromotionDecisionLabel(record.orderConversionRate30d);
+              const iconName =
+                promotionLabel === '可做推广'
+                  ? 'spark'
+                  : record.screenshotUrl
+                    ? 'image'
+                    : 'message';
+
+              return (
+                <article
+                  key={record.id}
+                  className="rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-white p-4 shadow-[var(--shadow-card)]"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3">
+                      <IconBadge
+                        tone="surface"
+                        icon={<AppIcon name={iconName} size={16} />}
+                        className="h-9 w-9"
+                      />
+                      <div>
+                        <p className="text-sm font-medium text-[var(--color-text-primary)]">
+                          {normalizeAfterSalesStaffName(record.staffName)}
+                        </p>
+                        <p className="mt-1 text-xs text-[var(--color-text-muted)]">{record.date}</p>
+                      </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => void onDeleteFollowUp(record.id)}
-                      disabled={deletingFollowUpId === record.id}
-                      className="inline-flex items-center space-x-1 rounded-md px-1.5 py-0.5 text-xs text-red-600 transition-colors hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:text-slate-400"
-                    >
-                      <Trash2 size={14} />
-                      <span>{deletingFollowUpId === record.id ? '删除中' : '删除'}</span>
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <AppPill
+                        tone={
+                          promotionLabel === '可做推广'
+                            ? 'successSoft'
+                            : promotionLabel === '待观察'
+                              ? 'warningSoft'
+                              : 'brandSoft'
+                        }
+                      >
+                        {record.intention === '未知' ? promotionLabel : `${record.intention}意向`}
+                      </AppPill>
+                      <button
+                        type="button"
+                        onClick={() => void onDeleteFollowUp(record.id)}
+                        disabled={deletingFollowUpId === record.id}
+                        className="inline-flex rounded-full p-2 text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-danger-soft)] hover:text-red-600"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   </div>
-                </div>
-                <div className="mb-3 flex flex-wrap gap-2">
-                  <span className="rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600">
-                    {record.communicationType}
-                  </span>
-                  <span
-                    className={`rounded-md px-2 py-1 text-xs font-medium ${getIntentionClass(
-                      record.intention,
-                    )}`}
-                  >
-                    意向：{record.intention}
-                  </span>
-                  <span className="rounded-md bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700">
-                    30天转化率：
-                    {record.orderConversionRate30d === null
-                      ? '-'
-                      : `${record.orderConversionRate30d}%`}
-                  </span>
-                  <span className="rounded-md bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700">
-                    {getPromotionDecisionLabel(record.orderConversionRate30d)}
-                  </span>
-                </div>
-                <p className="rounded-lg border border-slate-100 bg-slate-50 p-3 text-sm text-slate-700">
-                  {record.notes || '无备注内容'}
-                </p>
-                {record.screenshotUrl && (
-                  <div className="mt-3 overflow-hidden rounded-lg border border-slate-200">
-                    <img
-                      src={record.screenshotUrl}
-                      alt="跟进截图"
-                      className="max-h-56 w-full object-contain bg-slate-50"
-                      referrerPolicy="no-referrer"
-                    />
-                  </div>
-                )}
-              </div>
-            ))
+                  <p className="mt-4 text-xs leading-5 text-[var(--color-text-secondary)]">
+                    {record.notes || '暂无备注内容'}
+                  </p>
+                </article>
+              );
+            })
           ) : (
-            <div className="py-10 text-center text-sm text-slate-500">暂无跟进记录</div>
+            <EmptyState text="暂无跟进记录" />
           )
         ) : recharges.length > 0 ? (
-          recharges.map((record) => (
-            <div
-              key={record.id}
-              className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
-            >
-              <div className="mb-3 flex items-center justify-between">
-                <div className="flex items-center space-x-2 text-sm font-medium text-slate-900">
-                  <User size={16} className="text-slate-400" />
-                  <span>{normalizeAfterSalesStaffName(record.staffName)}</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div className="flex items-center space-x-1 text-xs text-slate-500">
-                    <Calendar size={14} />
-                    <span>{record.date}</span>
+          recharges.map((record) => {
+            const screenshotPreview = getRechargeScreenshotPreview(record);
+
+            return (
+              <article
+                key={record.id}
+                className="rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-white p-4 shadow-[var(--shadow-card)]"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3">
+                    <IconBadge
+                      tone="surface"
+                      icon={<AppIcon name="wallet" size={16} />}
+                      className="h-9 w-9"
+                    />
+                    <div>
+                      <p className="text-sm font-medium text-[var(--color-text-primary)]">
+                        {normalizeAfterSalesStaffName(record.staffName)}
+                      </p>
+                      <p className="mt-1 text-xs text-[var(--color-text-muted)]">{record.date}</p>
+                    </div>
                   </div>
                   <button
                     type="button"
                     onClick={() => void onDeleteRecharge(record.id)}
                     disabled={deletingRechargeId === record.id}
-                    className="inline-flex items-center space-x-1 text-xs text-red-600 hover:text-red-700 disabled:cursor-not-allowed disabled:text-slate-400"
+                    className="inline-flex rounded-full p-2 text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-danger-soft)] hover:text-red-600"
                   >
                     <Trash2 size={14} />
-                    <span>{deletingRechargeId === record.id ? '删除中' : '删除'}</span>
                   </button>
                 </div>
-              </div>
-              <div className="mb-3 flex items-baseline space-x-1">
-                <span className="text-lg font-bold text-emerald-600">
+                <p className="mt-4 text-lg font-semibold text-[var(--color-text-primary)]">
                   ¥{record.amount.toFixed(2)}
-                </span>
-                <span className="text-xs text-slate-500">充值金额</span>
-              </div>
-              {record.screenshotUrl && (
-                <div className="mt-2 overflow-hidden rounded-lg border border-slate-200">
-                  <img
-                    src={record.screenshotUrl}
-                    alt="充值截图"
-                    className="h-32 w-full object-cover"
-                    referrerPolicy="no-referrer"
-                  />
-                </div>
-              )}
-            </div>
-          ))
+                </p>
+                {screenshotPreview.visible ? (
+                  <button
+                    type="button"
+                    onClick={() => setPreviewState(openStoreHistoryPreview(screenshotPreview))}
+                    className="mt-4 block w-full overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-canvas)] text-left transition-transform hover:scale-[1.01]"
+                  >
+                    <img
+                      src={screenshotPreview.src}
+                      alt={screenshotPreview.alt}
+                      className="max-h-56 w-full object-contain"
+                      referrerPolicy="no-referrer"
+                    />
+                    <span className="block border-t border-[var(--color-border-subtle)] px-3 py-2 text-xs text-[var(--color-text-muted)]">
+                      点击图片可放大查看
+                    </span>
+                  </button>
+                ) : null}
+              </article>
+            );
+          })
         ) : (
-          <div className="py-10 text-center text-sm text-slate-500">暂无充值记录</div>
+          <EmptyState text="暂无充值记录" />
         )}
+
+        <div className="rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-white p-4 shadow-[var(--shadow-card)]">
+          <p className="text-xs text-[var(--color-text-muted)]">当月轨迹摘要</p>
+          <p className="mt-3 text-sm font-medium text-[var(--color-text-primary)]">{summaryText}</p>
+        </div>
       </div>
+      <StoreHistoryPreviewDialog
+        isOpen={previewState.isOpen}
+        src={previewState.src}
+        alt={previewState.alt}
+        onClose={() => setPreviewState(closeStoreHistoryPreview())}
+      />
+    </div>
+  );
+}
+
+function TabButton({
+  active,
+  label,
+  onClick,
+}: {
+  active: boolean;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-[var(--radius-lg)] px-4 py-2 text-sm font-medium transition-colors ${
+        active
+          ? 'bg-[var(--color-brand-primary)] text-white'
+          : 'border border-[var(--color-border-subtle)] bg-white text-[var(--color-text-secondary)]'
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
+function EmptyState({ text }: { text: string }) {
+  return (
+    <div className="flex h-36 items-center justify-center rounded-[var(--radius-lg)] border border-dashed border-[var(--color-border-subtle)] bg-white text-sm text-[var(--color-text-muted)]">
+      {text}
     </div>
   );
 }

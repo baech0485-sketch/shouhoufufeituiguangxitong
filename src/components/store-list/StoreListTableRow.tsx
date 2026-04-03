@@ -1,6 +1,11 @@
 import React from 'react';
-import { Sparkles, Store as StoreIcon } from 'lucide-react';
+
 import { Store } from '../../types';
+import AppPill from '../ui/AppPill';
+import {
+  getPlatformAppearance,
+  getStoreStatusAppearance,
+} from '../ui/statusAppearance.js';
 import StorePromotionCell from './StorePromotionCell';
 import { getStoreNameTextClassName } from './storeListTablePresentation.js';
 
@@ -19,28 +24,6 @@ interface StoreListTableRowProps {
   onSelectStore: (store: Store) => void;
 }
 
-function getPlatformBadgeClass(platform: string) {
-  if (platform === '美团餐饮') {
-    return 'border border-amber-200 bg-gradient-to-r from-amber-100 to-amber-50 text-amber-800';
-  }
-  if (platform === '饿了么餐饮') {
-    return 'border border-emerald-200 bg-gradient-to-r from-emerald-100 to-emerald-50 text-emerald-800';
-  }
-  return 'border border-blue-200 bg-gradient-to-r from-blue-100 to-blue-50 text-blue-800';
-}
-
-function getCountBadgeClass(count: number, variant: 'followUp' | 'recharge') {
-  if (count <= 0) {
-    return 'border border-slate-200 bg-slate-100 text-slate-500';
-  }
-
-  if (variant === 'followUp') {
-    return 'border border-indigo-200 bg-gradient-to-r from-indigo-100 to-indigo-50 text-indigo-700';
-  }
-
-  return 'border border-emerald-200 bg-gradient-to-r from-emerald-100 to-emerald-50 text-emerald-700';
-}
-
 export default function StoreListTableRow({
   store,
   latestFollowUpStaffMap,
@@ -56,80 +39,42 @@ export default function StoreListTableRow({
     orderConversionRate30d: null,
     promotionDecisionLabel: '-',
   };
+  const statusAppearance = getStoreStatusAppearance(store.status);
+  const platformAppearance = getPlatformAppearance(store.platform);
 
   return (
     <tr
       onClick={() => onSelectStore(store)}
-      className="group cursor-pointer text-sm transition-all even:bg-slate-50/50 hover:bg-indigo-50/40"
+      className="group cursor-pointer transition-transform hover:-translate-y-0.5"
     >
-      <td className="px-6 py-4 font-mono text-sm text-slate-600">{store.merchantId || '-'}</td>
-      <td className="px-6 py-4">
-        <div className="flex items-center space-x-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-md transition-shadow group-hover:shadow-lg">
-            <StoreIcon size={20} />
-          </div>
-          <span className={getStoreNameTextClassName()}>{store.name}</span>
+      <td className="rounded-l-[var(--radius-lg)] border border-r-0 border-[var(--color-border-subtle)] bg-white px-4 py-4 align-top group-hover:bg-[var(--color-brand-soft)]">
+        <div className="space-y-1">
+          <p className={getStoreNameTextClassName()}>{store.name}</p>
+          <p className="text-xs text-[var(--color-text-muted)]">录入日期 {store.openDate}</p>
         </div>
       </td>
-      <td className="px-6 py-4">
-        <span
-          className={`inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium shadow-sm ${getPlatformBadgeClass(
-            store.platform,
-          )}`}
-        >
-          {store.platform}
-        </span>
+      <td className="border border-x-0 border-[var(--color-border-subtle)] bg-white px-4 py-4 align-top text-sm text-[var(--color-text-secondary)] group-hover:bg-[var(--color-brand-soft)]">
+        {store.merchantId || '-'}
       </td>
-      <td className="px-6 py-4 text-sm text-slate-600">{store.openDate}</td>
-      <td className="px-6 py-4">
-        <span
-          className={`inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-sm font-medium shadow-sm ${
-            store.status === '待跟进'
-              ? 'bg-slate-100 text-slate-700'
-              : store.status === '已跟进'
-                ? 'bg-blue-100 text-blue-700'
-                : store.status === '已在推广'
-                  ? 'bg-violet-100 text-violet-700'
-                : 'bg-emerald-100 text-emerald-700'
-          }`}
-        >
-          {(store.status === '已充值' || store.status === '已在推广') && <Sparkles size={12} />}
-          {store.status}
-        </span>
+      <td className="border border-x-0 border-[var(--color-border-subtle)] bg-white px-4 py-4 align-top group-hover:bg-[var(--color-brand-soft)]">
+        <AppPill tone={platformAppearance.tone}>{platformAppearance.label}</AppPill>
       </td>
-      <td className="px-6 py-4 text-sm font-medium text-slate-700">
+      <td className="border border-x-0 border-[var(--color-border-subtle)] bg-white px-4 py-4 align-top group-hover:bg-[var(--color-brand-soft)]">
+        <AppPill tone={statusAppearance.tone}>{statusAppearance.label}</AppPill>
+      </td>
+      <td className="border border-x-0 border-[var(--color-border-subtle)] bg-white px-4 py-4 align-top text-sm font-medium text-[var(--color-text-secondary)] group-hover:bg-[var(--color-brand-soft)]">
         {latestFollowUpStaffMap.get(store.id) || '-'}
       </td>
-      <td className="px-6 py-4">
-        <span
-          className={`inline-flex min-w-[40px] items-center justify-center rounded-md px-3 py-1 text-sm font-medium shadow-sm ${getCountBadgeClass(
-            followUpCount,
-            'followUp',
-          )}`}
-        >
-          {followUpCount}
-        </span>
+      <td className="border border-x-0 border-[var(--color-border-subtle)] bg-white px-4 py-4 align-top text-sm text-[var(--color-text-secondary)] group-hover:bg-[var(--color-brand-soft)]">
+        {followUpCount} / {rechargeCount}
       </td>
-      <td className="px-6 py-4">
-        <span
-          className={`inline-flex min-w-[40px] items-center justify-center rounded-md px-3 py-1 text-sm font-medium shadow-sm ${getCountBadgeClass(
-            rechargeCount,
-            'recharge',
-          )}`}
-        >
-          {rechargeCount}
-        </span>
-      </td>
-      <td className="px-6 py-4 text-sm font-medium text-slate-900">
+      <td className="border border-x-0 border-[var(--color-border-subtle)] bg-white px-4 py-4 align-top text-sm font-medium text-[var(--color-text-primary)] group-hover:bg-[var(--color-brand-soft)]">
         {totalRechargeAmountMap.has(store.id)
           ? `¥${totalRechargeAmountMap.get(store.id)?.toLocaleString()}`
-          : '-'}
+          : '¥0'}
       </td>
-      <td className="px-6 py-4">
-        <StorePromotionCell
-          orderConversionRate30d={promotionStatus.orderConversionRate30d}
-          promotionDecisionLabel={promotionStatus.promotionDecisionLabel}
-        />
+      <td className="rounded-r-[var(--radius-lg)] border border-l-0 border-[var(--color-border-subtle)] bg-white px-4 py-4 align-top group-hover:bg-[var(--color-brand-soft)]">
+        <StorePromotionCell promotionDecisionLabel={promotionStatus.promotionDecisionLabel} />
       </td>
     </tr>
   );

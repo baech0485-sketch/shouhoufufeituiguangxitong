@@ -1,5 +1,5 @@
 import React from 'react';
-import { Store as StoreIcon } from 'lucide-react';
+
 import { Store } from '../../types';
 import StoreListTableRow from './StoreListTableRow';
 import { STORE_LIST_COLUMN_TITLES } from './storeListTablePresentation.js';
@@ -36,24 +36,24 @@ export default function StoreListTable(props: StoreListTableProps) {
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full border-collapse text-left">
+      <table className="w-full border-separate border-spacing-y-2 text-left">
         <thead>
-          <tr className="border-b border-slate-200 bg-slate-50/80">
+          <tr>
             {STORE_LIST_COLUMN_TITLES.map((title) => (
               <th
                 key={title}
-                className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-600"
+                className="px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-muted)]"
               >
                 {title}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100">
+        <tbody>
           {errorMessage ? (
-            <StoreListMessageRow colSpan={10} tone="error" message={errorMessage} />
+            <StoreListMessageRow colSpan={8} tone="error" message={errorMessage} />
           ) : isLoading ? (
-            <StoreListMessageRow colSpan={10} tone="loading" message="正在加载店铺数据..." />
+            <StoreListMessageRow colSpan={8} tone="loading" message="正在加载店铺数据..." />
           ) : stores.length > 0 ? (
             stores.map((store) => (
               <React.Fragment key={store.id}>
@@ -69,7 +69,7 @@ export default function StoreListTable(props: StoreListTableProps) {
               </React.Fragment>
             ))
           ) : (
-            <StoreListMessageRow colSpan={10} tone="empty" message="没有找到符合条件的店铺" />
+            <StoreListMessageRow colSpan={8} tone="empty" message="没有找到符合条件的店铺" />
           )}
         </tbody>
       </table>
@@ -88,24 +88,16 @@ function StoreListMessageRow({
 }) {
   return (
     <tr>
-      <td colSpan={colSpan} className="px-6 py-16 text-center">
-        {tone === 'loading' ? (
-          <div className="flex flex-col items-center justify-center text-slate-500">
-            <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"></div>
-            <p>{message}</p>
-          </div>
-        ) : (
-          <div className={tone === 'error' ? 'text-red-600' : 'text-slate-400'}>
-            <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
-              {tone === 'error' ? (
-                <span className="text-2xl">⚠️</span>
-              ) : (
-                <StoreIcon size={32} className="text-slate-300" />
-              )}
-            </div>
-            <p>{message}</p>
-          </div>
-        )}
+      <td colSpan={colSpan} className="px-4 py-12 text-center">
+        <div
+          className={`rounded-[var(--radius-lg)] border px-4 py-10 text-sm ${
+            tone === 'error'
+              ? 'border-red-200 bg-[var(--color-danger-soft)] text-red-700'
+              : 'border-dashed border-[var(--color-border-subtle)] bg-[var(--color-bg-canvas)] text-[var(--color-text-muted)]'
+          }`}
+        >
+          {message}
+        </div>
       </td>
     </tr>
   );

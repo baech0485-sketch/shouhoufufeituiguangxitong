@@ -1,7 +1,11 @@
 import React from 'react';
-import { LayoutDashboard, List, User } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
+
+import { APP_NAV_ITEMS } from './app-shell/navigation.js';
+import { getSidebarMeta } from './app-shell/sidebarMeta.js';
+import AppIcon from './ui/AppIcon';
+import IconBadge from './ui/IconBadge';
 import { ViewState } from '../types';
-import { getContentContainerClassName } from '../layout/contentWidth.js';
 
 interface SidebarProps {
   currentView: ViewState;
@@ -9,52 +13,64 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ currentView, onChangeView }: SidebarProps) {
-  const navItems = [
-    { id: 'dashboard' as ViewState, label: '数据看板', icon: LayoutDashboard },
-    { id: 'list' as ViewState, label: '店铺列表', icon: List },
-  ];
+  const sidebarMeta = getSidebarMeta();
 
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/95 backdrop-blur-sm shadow-sm">
-      <div
-        className={`${getContentContainerClassName(currentView)} flex flex-col gap-4 px-6 py-4 md:px-8 lg:flex-row lg:items-center lg:justify-between`}
-      >
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-8">
-          <div className="min-w-0 shrink-0">
-            <h1 className="text-xl font-bold tracking-tight text-slate-900">呈尚策划售后系统</h1>
-            <p className="mt-1 text-xs font-medium text-slate-500">美团外卖 & 淘宝闪购</p>
+    <aside className="w-full lg:w-[248px] lg:shrink-0">
+      <div className="flex h-full flex-col gap-6 rounded-[var(--radius-2xl)] bg-[var(--color-bg-sidebar)] p-5 text-white shadow-[var(--shadow-elevated)] lg:min-h-screen lg:rounded-none">
+        <div>
+          <div className="flex items-start gap-4">
+            <IconBadge tone="brand" icon={<Sparkles size={18} />} className="mt-0.5" />
+            <div className="min-w-0">
+              <h1 className="text-lg font-semibold tracking-[-0.02em]">{sidebarMeta.title}</h1>
+              <p className="mt-1 text-xs text-[#a0b2c9]">{sidebarMeta.subtitle}</p>
+            </div>
           </div>
-          <nav className="flex flex-wrap items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50/80 p-1.5 shadow-inner shadow-slate-100/80">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = currentView === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => onChangeView(item.id)}
-                  className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${
-                    isActive
-                      ? 'bg-indigo-50 text-indigo-600 shadow-sm ring-1 ring-indigo-200/50'
-                      : 'text-slate-600 hover:bg-white hover:text-slate-900'
-                  }`}
-                >
-                  <Icon size={18} />
-                  <span>{item.label}</span>
-                </button>
-              );
-            })}
-          </nav>
         </div>
-        <div className="inline-flex items-center gap-3 self-start rounded-lg border border-slate-200 bg-slate-50/90 px-4 py-2.5 shadow-sm lg:self-auto">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-100 ring-1 ring-indigo-200/80">
-            <User size={16} className="text-indigo-600" />
-          </div>
-          <div>
-            <p className="text-xs font-medium uppercase tracking-[0.16em] text-slate-400">Admin</p>
-            <p className="text-sm font-semibold text-slate-700">系统管理员</p>
+
+        <nav className="grid gap-2">
+          {APP_NAV_ITEMS.map((item) => {
+            const isActive = item.id === currentView;
+            const isDisabled = !item.actionable;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => {
+                  if (item.actionable) {
+                    onChangeView(item.id as ViewState);
+                  }
+                }}
+                disabled={isDisabled}
+                className={`flex items-center gap-3 rounded-[var(--radius-lg)] px-3.5 py-3 text-left text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-[var(--color-brand-primary)] text-white'
+                    : 'text-[#cfdbed] hover:bg-white/8'
+                } ${isDisabled ? 'cursor-default opacity-85' : ''}`.trim()}
+              >
+                <AppIcon
+                  name={item.icon as React.ComponentProps<typeof AppIcon>['name']}
+                  size={18}
+                />
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
+        </nav>
+
+        <div className="hidden flex-1 lg:block" />
+
+        <div className="rounded-[20px] border border-white/8 bg-white/8 p-4">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/90">
+            Admin
+          </p>
+          <p className="mt-3 text-lg font-semibold">系统管理员</p>
+          <div className="mt-3 flex items-center gap-2 text-xs text-[#d6e7f8]">
+            <span className="inline-block h-2.5 w-2.5 rounded-full bg-[var(--color-success)]" />
+            云端同步正常
           </div>
         </div>
       </div>
-    </header>
+    </aside>
   );
 }

@@ -1,5 +1,7 @@
 import React from 'react';
 
+import SelectField from '../ui/SelectField';
+
 type DashboardPlatformFilter = 'all' | 'meituan' | 'eleme';
 
 const DASHBOARD_PLATFORM_OPTIONS: Array<{
@@ -27,9 +29,11 @@ export default function DashboardControls({
   onPlatformChange,
 }: DashboardControlsProps) {
   return (
-    <div className="flex flex-col gap-4 md:flex-row md:items-end">
+    <div className="flex flex-col gap-3 rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-white p-4 shadow-[var(--shadow-card)] lg:flex-row lg:items-end lg:justify-between">
       <div>
-        <label className="mb-2 block text-sm font-medium text-slate-700">平台筛选</label>
+        <label className="mb-2 block text-xs font-medium uppercase tracking-[0.14em] text-[var(--color-text-muted)]">
+          平台筛选
+        </label>
         <div className="flex flex-wrap items-center gap-2">
           {DASHBOARD_PLATFORM_OPTIONS.map((option) => {
             const isActive = selectedPlatform === option.value;
@@ -38,10 +42,10 @@ export default function DashboardControls({
                 key={option.value}
                 type="button"
                 onClick={() => onPlatformChange(option.value)}
-                className={`rounded-lg border px-4 py-2 text-sm font-medium transition-all ${
+                className={`rounded-[var(--radius-lg)] border px-3 py-2 text-sm font-medium transition-colors ${
                   isActive
-                    ? 'bg-indigo-50 text-indigo-700 shadow-sm ring-1 ring-indigo-200/50'
-                    : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900'
+                    ? 'border-transparent bg-[var(--color-brand-soft)] text-[var(--color-brand-primary)]'
+                    : 'border-[var(--color-border-subtle)] bg-white text-[var(--color-text-secondary)] hover:border-[var(--color-brand-primary)] hover:text-[var(--color-brand-primary)]'
                 }`}
               >
                 {option.label}
@@ -50,22 +54,16 @@ export default function DashboardControls({
           })}
         </div>
       </div>
-      <div>
-        <label htmlFor="dashboard-month" className="mb-1 block text-sm font-medium text-slate-700">
-          统计月份
-        </label>
-        <select
-          id="dashboard-month"
+      <div className="min-w-[180px]">
+        <SelectField
           value={selectedMonth}
-          onChange={(event) => onMonthChange(event.target.value)}
-          className="min-w-[160px] rounded-lg border border-slate-200 bg-white px-4 py-2 outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-        >
-          {(availableMonths.length > 0 ? availableMonths : [selectedMonth]).map((month) => (
-            <option key={month} value={month}>
-              {month}
-            </option>
-          ))}
-        </select>
+          onChange={onMonthChange}
+          label="统计月份"
+          options={(availableMonths.length > 0 ? availableMonths : [selectedMonth]).map((month) => ({
+            label: month,
+            value: month,
+          }))}
+        />
       </div>
     </div>
   );

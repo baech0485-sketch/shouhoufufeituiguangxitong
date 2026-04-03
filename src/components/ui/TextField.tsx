@@ -3,6 +3,7 @@ import { getFieldContainerClassName, getFieldControlClassName } from './fieldSty
 
 interface TextFieldProps {
   value: string;
+  label?: string;
   placeholder?: string;
   onChange: (value: string) => void;
   leadingIcon?: React.ReactNode;
@@ -12,6 +13,7 @@ interface TextFieldProps {
 
 export default function TextField({
   value,
+  label = '',
   placeholder = '',
   onChange,
   leadingIcon,
@@ -21,19 +23,26 @@ export default function TextField({
   const hasLeadingIcon = Boolean(leadingIcon);
 
   return (
-    <div className={`${getFieldContainerClassName({ hasLeadingIcon })} ${containerClassName}`.trim()}>
-      {hasLeadingIcon && (
-        <div className="flex shrink-0 items-center text-slate-400 transition-colors group-focus-within:text-indigo-500">
-          {leadingIcon}
-        </div>
-      )}
-      <input
-        type="text"
-        value={value}
-        placeholder={placeholder}
-        onChange={(event) => onChange(event.target.value)}
-        className={`${getFieldControlClassName({ hasLeadingIcon })} ${inputClassName}`.trim()}
-      />
-    </div>
+    <label className={`block ${containerClassName}`.trim()}>
+      {label ? (
+        <span className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">
+          {label}
+        </span>
+      ) : null}
+      <div className={getFieldContainerClassName({ hasLeadingIcon })}>
+        {hasLeadingIcon && (
+          <div className="flex shrink-0 items-center text-[var(--color-brand-primary)]">
+            {leadingIcon}
+          </div>
+        )}
+        <input
+          type="text"
+          value={value}
+          placeholder={placeholder}
+          onChange={(event) => onChange(event.target.value)}
+          className={`${getFieldControlClassName({ hasLeadingIcon })} ${inputClassName}`.trim()}
+        />
+      </div>
+    </label>
   );
 }

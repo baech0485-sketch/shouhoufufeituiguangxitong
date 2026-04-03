@@ -1,5 +1,9 @@
 import React from 'react';
+
+import AppPill from '../ui/AppPill';
+import SurfaceCard from '../ui/SurfaceCard';
 import { StaffPerformanceItem } from './monthly-utils';
+import { getStaffPerformanceCardPresentation } from './staffPerformancePresentation.js';
 
 interface StaffPerformanceTableProps {
   title: string;
@@ -12,47 +16,97 @@ export default function StaffPerformanceTable({
   data,
   emptyText,
 }: StaffPerformanceTableProps) {
+  const maxAmount = data[0]?.amount || 0;
+
   return (
-    <div className="flex flex-col rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h3 className="mb-6 text-lg font-bold text-slate-900">{title}</h3>
-      <div className="flex-1 overflow-y-auto">
-        <table className="w-full border-collapse text-left">
-          <thead>
-            <tr className="border-b border-slate-200 bg-slate-50/80 text-sm font-medium text-slate-500">
-              <th className="pb-3 pt-3 pl-3">售后人员</th>
-              <th className="pb-3 pt-3 text-right">跟进店铺数</th>
-              <th className="pb-3 pt-3 text-right">可做推广店铺数</th>
-              <th className="pb-3 pt-3 text-right">已充值店铺数</th>
-              <th className="pb-3 pt-3 text-right">充值转化率</th>
-              <th className="pb-3 pt-3 pr-3 text-right">充值业绩</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {data.length > 0 ? (
-              data.map((staff) => (
-                <tr key={staff.name} className="transition-colors hover:bg-indigo-50/40">
-                  <td className="py-3 pl-3 font-medium text-slate-900">{staff.name}</td>
-                  <td className="py-3 text-right text-slate-600">{staff.followedStores}</td>
-                  <td className="py-3 text-right text-slate-600">{staff.promotableStores}</td>
-                  <td className="py-3 text-right text-slate-600">{staff.rechargedStores}</td>
-                  <td className="py-3 text-right text-slate-600">
-                    {staff.conversionRate.toFixed(1)}%
-                  </td>
-                  <td className="py-3 pr-3 text-right font-bold text-emerald-600">
-                    ¥{staff.amount.toLocaleString()}
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={6} className="py-10 text-center text-slate-500">
-                  {emptyText}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+    <SurfaceCard className="flex h-full flex-col p-6">
+      <div className="mb-5">
+        <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">{title}</h3>
+        <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+          按售后人员查看跟进门店数、充值门店数和总金额
+        </p>
       </div>
-    </div>
+      <div className="flex-1 space-y-3 overflow-y-auto">
+        {data.length > 0 ? (
+          data.map((staff, index) => {
+            const presentation = getStaffPerformanceCardPresentation({
+              index,
+              amount: staff.amount,
+              maxAmount,
+            });
+
+            return (
+              <article
+                key={staff.name}
+                className={`overflow-hidden rounded-[var(--radius-xl)] border ${
+                  presentation.containerTone === 'top'
+                    ? 'border-[var(--color-brand-primary)] bg-[linear-gradient(135deg,_#eef4ff_0%,_#ffffff_68%)] shadow-[var(--shadow-card-hover)]'
+                    : 'border-[var(--color-border-subtle)] bg-[var(--color-bg-canvas)]'
+                }`}
+              >
+                <div className="flex items-start gap-4 p-4">
+                  <div
+                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${
+                      presentation.isTopPerformer
+                        ? 'bg-[var(--color-brand-primary)] text-white'
+                        : 'bg-white text-[var(--color-brand-primary)] ring-1 ring-[var(--color-border-subtle)]'
+                    }`}
+                  >
+                    {String(index + 1).padStart(2, '0')}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-[var(--color-text-primary)]">
+                          {staff.name}
+                        </p>
+                        <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+                          跟进 {staff.followedStores} 家 / 已充值 {staff.rechargedStores} 家
+                        </p>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <p
+                          className={`text-xl font-semibold tracking-[-0.03em] ${
+                            presentation.amountTone === 'brand'
+                              ? 'text-[var(--color-brand-primary)]'
+                              : 'text-[var(--color-text-primary)]'
+                          }`}
+                        >
+                          ¥{staff.amount.toLocaleString()}
+                        </p>
+                        <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-[var(--color-text-muted)]">
+                          充值业绩
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/80 ring-1 ring-[var(--color-border-subtle)]">
+                      <div
+                        className={`h-full rounded-full ${
+                          presentation.isTopPerformer
+                            ? 'bg-[linear-gradient(90deg,_#2563eb_0%,_#5b8cff_100%)]'
+                            : 'bg-[linear-gradient(90deg,_#9ebcff_0%,_#d8e5ff_100%)]'
+                        }`}
+                        style={{ width: presentation.progressWidth }}
+                      />
+                    </div>
+
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <AppPill tone="default">跟进 {staff.followedStores}</AppPill>
+                      <AppPill tone="successSoft">可推 {staff.promotableStores}</AppPill>
+                      <AppPill tone="brandSoft">转化 {staff.conversionRate.toFixed(1)}%</AppPill>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            );
+          })
+        ) : (
+          <div className="flex h-full items-center justify-center rounded-[var(--radius-lg)] border border-dashed border-[var(--color-border-subtle)] bg-[var(--color-bg-canvas)] px-4 py-10 text-sm text-[var(--color-text-muted)]">
+            {emptyText}
+          </div>
+        )}
+      </div>
+    </SurfaceCard>
   );
 }

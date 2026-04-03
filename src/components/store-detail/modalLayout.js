@@ -1,24 +1,20 @@
 export function getStoreDetailModalContainerClassName() {
   return [
     'flex',
-    'max-h-[90vh]',
+    'max-h-[92vh]',
     'w-full',
-    'max-w-[1400px]',
+    'max-w-[1080px]',
     'flex-col',
     'overflow-hidden',
-    'rounded-2xl',
+    'rounded-[var(--radius-2xl)]',
     'bg-white',
-    'shadow-xl',
-    'animate-in',
-    'fade-in',
-    'zoom-in-95',
-    'duration-200',
+    'shadow-[var(--shadow-modal)]',
   ].join(' ');
 }
 
 export function getStoreDetailModalPaneClassNames() {
   return {
-    historyPane: 'flex w-[56%] flex-col overflow-hidden',
-    formPane: 'flex w-[44%] flex-col bg-white',
+    historyPane: 'flex w-[38%] flex-col overflow-hidden',
+    formPane: 'flex w-[62%] flex-col bg-white',
   };
 }

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+
 import {
   CommunicationType,
   FollowUp,
@@ -7,15 +8,15 @@ import {
   Store,
 } from '../types';
 import { buildRechargePayload } from '../utils/rechargeSubmission.js';
-import RechargeForm from './store-detail/RechargeForm';
 import FollowUpForm from './store-detail/FollowUpForm';
+import RechargeForm from './store-detail/RechargeForm';
 import StoreDetailHeader from './store-detail/StoreDetailHeader';
 import StoreHistoryPanel, { StoreDetailTab } from './store-detail/StoreHistoryPanel';
 import {
   getStoreDetailModalContainerClassName,
   getStoreDetailModalPaneClassNames,
 } from './store-detail/modalLayout.js';
-import { useImageUploadField } from './store-detail/useImageUploadField';
+import { useStoreDetailForms } from './store-detail/useStoreDetailForms';
 
 interface StoreDetailModalProps {
   store: Store;
@@ -48,160 +49,139 @@ export default function StoreDetailModal({
 }: StoreDetailModalProps) {
   const paneClassNames = getStoreDetailModalPaneClassNames();
   const [activeTab, setActiveTab] = useState<StoreDetailTab>('followUp');
-  const [commType, setCommType] = useState<CommunicationType>('私聊');
-  const [intention, setIntention] = useState<Intention>('未知');
-  const [notes, setNotes] = useState('');
-  const [orderConversionRate30d, setOrderConversionRate30d] = useState('');
-  const [staffName, setStaffName] = useState(staffOptions[0] || '');
-  const [amount, setAmount] = useState('');
-  const [rechargeDate, setRechargeDate] = useState(new Date().toISOString().split('T')[0]);
-  const [rechargeStaff, setRechargeStaff] = useState(staffOptions[0] || '');
-  const [deletingFollowUpId, setDeletingFollowUpId] = useState('');
-  const [deletingRechargeId, setDeletingRechargeId] = useState('');
-  const followUpScreenshot = useImageUploadField();
-  const rechargeScreenshot = useImageUploadField();
-
-  useEffect(() => {
-    if (!staffName && staffOptions.length > 0) {
-      setStaffName(staffOptions[0]);
-    }
-    if (!rechargeStaff && staffOptions.length > 0) {
-      setRechargeStaff(staffOptions[0]);
-    }
-  }, [staffOptions, staffName, rechargeStaff]);
-
-  const handleAddFollowUp = (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!staffName || followUpScreenshot.screenshotError) {
-      return;
-    }
-
-    onAddFollowUp({
-      storeId: store.id,
-      date: new Date().toISOString().split('T')[0],
-      communicationType: commType,
-      intention,
-      notes,
-      staffName,
-      orderConversionRate30d: orderConversionRate30d ? Number(orderConversionRate30d) : null,
-      screenshotUrl: followUpScreenshot.screenshotUrl,
-    });
-
-    setNotes('');
-    setOrderConversionRate30d('');
-    followUpScreenshot.clearScreenshot();
-  };
-
-  const handleAddRecharge = (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!amount || !rechargeStaff || rechargeScreenshot.screenshotError) {
-      return;
-    }
-
-    onAddRecharge(
-      buildRechargePayload({
-        storeId: store.id,
-        amount,
-        date: rechargeDate,
-        screenshotUrl: rechargeScreenshot.screenshotUrl,
-        staffName: rechargeStaff,
-      }),
-    );
-
-    setAmount('');
-    rechargeScreenshot.clearScreenshot();
-  };
-
-  const handleDeleteFollowUp = async (followUpId: string) => {
-    const shouldDelete = window.confirm('确认删除这条跟进记录吗？删除后无法恢复。');
-    if (!shouldDelete) {
-      return;
-    }
-
-    setDeletingFollowUpId(followUpId);
-    try {
-      await onDeleteFollowUp(followUpId);
-    } finally {
-      setDeletingFollowUpId('');
-    }
-  };
-
-  const handleDeleteRecharge = async (rechargeId: string) => {
-    const shouldDelete = window.confirm('确认删除这条充值记录吗？删除后无法恢复。');
-    if (!shouldDelete) {
-      return;
-    }
-
-    setDeletingRechargeId(rechargeId);
-    try {
-      await onDeleteRecharge(rechargeId);
-    } finally {
-      setDeletingRechargeId('');
-    }
-  };
+  const {
+    commType,
+    intention,
+    notes,
+    orderConversionRate30d,
+    staffName,
+    amount,
+    rechargeDate,
+    rechargeStaff,
+    deletingFollowUpId,
+    deletingRechargeId,
+    followUpScreenshot,
+    rechargeScreenshot,
+    setCommType,
+    setIntention,
+    setNotes,
+    setOrderConversionRate30d,
+    setStaffName,
+    setAmount,
+    setRechargeDate,
+    setRechargeStaff,
+    handleAddFollowUp,
+    handleAddRecharge,
+    handleDeleteFollowUp,
+    handleDeleteRecharge,
+  } = useStoreDetailForms({
+    storeId: store.id,
+    staffOptions,
+    onAddFollowUp,
+    onAddRecharge,
+    onDeleteFollowUp,
+    onDeleteRecharge,
+  });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm animate-fade-in">
-      <div className={`${getStoreDetailModalContainerClassName()} animate-modal-in`}>
-        <StoreDetailHeader
-          store={store}
-          onClose={onClose}
-          onMarkPromoting={() => onMarkStoreAsPromoting(store.id)}
-          onRestoreAutoStatus={() => onRestoreStoreAutoStatus(store.id)}
-          isUpdatingStatus={isUpdatingStoreStatus}
-        />
-        <div className="flex flex-1 overflow-hidden">
-          <div className={paneClassNames.historyPane}>
-            <StoreHistoryPanel
-              activeTab={activeTab}
-              onTabChange={setActiveTab}
-              followUps={followUps}
-              recharges={recharges}
-              deletingFollowUpId={deletingFollowUpId}
-              deletingRechargeId={deletingRechargeId}
-              onDeleteFollowUp={handleDeleteFollowUp}
-              onDeleteRecharge={handleDeleteRecharge}
-            />
-          </div>
-          <div className={paneClassNames.formPane}>
-            <div className="flex-1 overflow-y-auto p-6">
-              {activeTab === 'followUp' ? (
-                <FollowUpForm
-                  commType={commType}
-                  intention={intention}
-                  notes={notes}
-                  orderConversionRate30d={orderConversionRate30d}
-                  staffName={staffName}
-                  staffOptions={staffOptions}
-                  screenshotName={followUpScreenshot.screenshotName}
-                  screenshotPreviewUrl={followUpScreenshot.screenshotUrl}
-                  screenshotError={followUpScreenshot.screenshotError}
-                  onCommTypeChange={setCommType}
-                  onIntentionChange={setIntention}
-                  onNotesChange={setNotes}
-                  onOrderConversionRate30dChange={setOrderConversionRate30d}
-                  onStaffNameChange={setStaffName}
-                  onScreenshotChange={followUpScreenshot.handleScreenshotChange}
-                  onScreenshotRemove={followUpScreenshot.clearScreenshot}
-                  onSubmit={handleAddFollowUp}
-                />
-              ) : (
-                <RechargeForm
-                  amount={amount}
-                  rechargeDate={rechargeDate}
-                  rechargeStaff={rechargeStaff}
-                  staffOptions={staffOptions}
-                  screenshotName={rechargeScreenshot.screenshotName}
-                  screenshotPreviewUrl={rechargeScreenshot.screenshotUrl}
-                  screenshotError={rechargeScreenshot.screenshotError}
-                  onAmountChange={setAmount}
-                  onRechargeDateChange={setRechargeDate}
-                  onRechargeStaffChange={setRechargeStaff}
-                  onScreenshotChange={rechargeScreenshot.handleScreenshotChange}
-                  onScreenshotRemove={rechargeScreenshot.clearScreenshot}
-                  onSubmit={handleAddRecharge}
-                />
-              )}
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-[rgb(15_23_42_/_0.34)] px-4 py-6 backdrop-blur-sm">
+      <div className="mx-auto flex min-h-[calc(100vh-3rem)] items-center justify-center">
+        <div className={`${getStoreDetailModalContainerClassName()} animate-modal-in p-7`}>
+          <StoreDetailHeader
+            store={store}
+            onClose={onClose}
+            onMarkPromoting={() => onMarkStoreAsPromoting(store.id)}
+            onRestoreAutoStatus={() => onRestoreStoreAutoStatus(store.id)}
+            isUpdatingStatus={isUpdatingStoreStatus}
+          />
+
+          <div className="mt-5 flex flex-1 flex-col gap-5 overflow-hidden lg:flex-row">
+            <div className={paneClassNames.historyPane}>
+              <StoreHistoryPanel
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                followUps={followUps}
+                recharges={recharges}
+                deletingFollowUpId={deletingFollowUpId}
+                deletingRechargeId={deletingRechargeId}
+                onDeleteFollowUp={handleDeleteFollowUp}
+                onDeleteRecharge={handleDeleteRecharge}
+              />
+            </div>
+            <div className={paneClassNames.formPane}>
+              <div className="rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-white p-5">
+                <div>
+                  <h4 className="text-lg font-semibold text-[var(--color-text-primary)]">录入工作台</h4>
+                  <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+                    使用统一字段节奏与截图区域，减少表单误填，并让状态联动更直观。
+                  </p>
+                </div>
+
+                <div className="mt-4 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('followUp')}
+                    className={`rounded-[var(--radius-lg)] px-4 py-2 text-sm font-medium transition-colors ${
+                      activeTab === 'followUp'
+                        ? 'bg-[var(--color-brand-primary)] text-white'
+                        : 'border border-[var(--color-border-subtle)] bg-white text-[var(--color-text-secondary)]'
+                    }`}
+                  >
+                    录入跟进
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('recharge')}
+                    className={`rounded-[var(--radius-lg)] px-4 py-2 text-sm font-medium transition-colors ${
+                      activeTab === 'recharge'
+                        ? 'bg-[var(--color-brand-primary)] text-white'
+                        : 'border border-[var(--color-border-subtle)] bg-white text-[var(--color-text-secondary)]'
+                    }`}
+                  >
+                    录入充值
+                  </button>
+                </div>
+
+                <div className="mt-5">
+                  {activeTab === 'followUp' ? (
+                    <FollowUpForm
+                      commType={commType}
+                      intention={intention}
+                      notes={notes}
+                      orderConversionRate30d={orderConversionRate30d}
+                      staffName={staffName}
+                      staffOptions={staffOptions}
+                      screenshotName={followUpScreenshot.screenshotName}
+                      screenshotPreviewUrl={followUpScreenshot.screenshotUrl}
+                      screenshotError={followUpScreenshot.screenshotError}
+                      onCommTypeChange={setCommType}
+                      onIntentionChange={setIntention}
+                      onNotesChange={setNotes}
+                      onOrderConversionRate30dChange={setOrderConversionRate30d}
+                      onStaffNameChange={setStaffName}
+                      onScreenshotChange={followUpScreenshot.handleScreenshotChange}
+                      onScreenshotRemove={followUpScreenshot.clearScreenshot}
+                      onSubmit={handleAddFollowUp}
+                    />
+                  ) : (
+                    <RechargeForm
+                      amount={amount}
+                      rechargeDate={rechargeDate}
+                      rechargeStaff={rechargeStaff}
+                      staffOptions={staffOptions}
+                      screenshotName={rechargeScreenshot.screenshotName}
+                      screenshotPreviewUrl={rechargeScreenshot.screenshotUrl}
+                      screenshotError={rechargeScreenshot.screenshotError}
+                      onAmountChange={setAmount}
+                      onRechargeDateChange={setRechargeDate}
+                      onRechargeStaffChange={setRechargeStaff}
+                      onScreenshotChange={rechargeScreenshot.handleScreenshotChange}
+                      onScreenshotRemove={rechargeScreenshot.clearScreenshot}
+                      onSubmit={handleAddRecharge}
+                    />
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>

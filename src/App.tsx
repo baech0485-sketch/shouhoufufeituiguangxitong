@@ -1,14 +1,16 @@
 import React, { useMemo, useState } from 'react';
+
+import { getAppShellClassNames } from './components/app-shell/layout.js';
 import Dashboard from './components/Dashboard';
 import Sidebar from './components/Sidebar';
 import StoreDetailModal from './components/StoreDetailModal';
 import StoreList from './components/StoreList';
 import { useAppStoreData } from './hooks/useAppStoreData';
-import { getContentContainerClassName } from './layout/contentWidth.js';
 import { ViewState } from './types';
 import { buildAfterSalesStaffOptions } from './utils/afterSalesStaff.js';
 
 export default function App() {
+  const shellClassNames = getAppShellClassNames();
   const [currentView, setCurrentView] = useState<ViewState>('dashboard');
   const {
     storePlatforms,
@@ -29,51 +31,50 @@ export default function App() {
     handleRestoreStoreAutoStatus,
   } = useAppStoreData();
 
-  const staffOptions = useMemo(() => {
-    return buildAfterSalesStaffOptions([
-      ...followUps.map((item) => item.staffName),
-      ...recharges.map((item) => item.staffName),
-    ]);
-  }, [followUps, recharges]);
+  const staffOptions = useMemo(
+    () =>
+      buildAfterSalesStaffOptions([
+        ...followUps.map((item) => item.staffName),
+        ...recharges.map((item) => item.staffName),
+      ]),
+    [followUps, recharges],
+  );
 
   return (
-    <div className="flex h-screen flex-col bg-slate-50 font-sans text-slate-900">
-      <Sidebar currentView={currentView} onChangeView={setCurrentView} />
-
-      <main className="flex-1 overflow-y-auto">
-        <div
-          className={`${getContentContainerClassName(currentView)} px-6 py-8 md:px-8 lg:py-10`}
-        >
-          {errorMessage && (
-            <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {errorMessage}
-            </div>
-          )}
-          {isLoading && (
-            <div className="mb-6 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
-              正在加载云端数据...
-            </div>
-          )}
-          {currentView === 'dashboard' && (
-            <Dashboard
-              storePlatforms={storePlatforms}
-              recharges={recharges}
-              followUps={followUps}
-            />
-          )}
-          {currentView === 'list' && (
-            <StoreList
-              onSelectStore={setSelectedStore}
-              onAddStore={handleAddStore}
-              refreshKey={storeListRefreshKey}
-              followUps={followUps}
-              recharges={recharges}
-              staffOptions={staffOptions}
-            />
-          )}
-        </div>
-      </main>
-
+    <div className={shellClassNames.root}>
+      <div className={shellClassNames.shell}>
+        <Sidebar currentView={currentView} onChangeView={setCurrentView} />
+        <main className={shellClassNames.main}>
+          <div className={shellClassNames.surface}>
+            {errorMessage && (
+              <div className="rounded-[var(--radius-lg)] border border-red-200 bg-[var(--color-danger-soft)] px-4 py-3 text-sm text-red-700">
+                {errorMessage}
+              </div>
+            )}
+            {isLoading && (
+              <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-white px-4 py-3 text-sm text-[var(--color-text-secondary)]">
+                正在加载云端数据...
+              </div>
+            )}
+            {currentView === 'dashboard' ? (
+              <Dashboard
+                storePlatforms={storePlatforms}
+                recharges={recharges}
+                followUps={followUps}
+              />
+            ) : (
+              <StoreList
+                onSelectStore={setSelectedStore}
+                onAddStore={handleAddStore}
+                refreshKey={storeListRefreshKey}
+                followUps={followUps}
+                recharges={recharges}
+                staffOptions={staffOptions}
+              />
+            )}
+          </div>
+        </main>
+      </div>
       {selectedStore && (
         <StoreDetailModal
           store={selectedStore}

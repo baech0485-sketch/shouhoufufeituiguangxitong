@@ -1,8 +1,10 @@
 import React from 'react';
-import { Filter, Search, UserRound } from 'lucide-react';
+
 import { STORE_PLATFORM_FILTER_OPTIONS } from '../../constants/storePlatforms';
+import AppIcon from '../ui/AppIcon';
 import SelectField from '../ui/SelectField';
 import TextField from '../ui/TextField';
+import { getStoreListResetButtonClassName } from './storeListFiltersLayout.js';
 
 interface StoreListFiltersProps {
   searchTerm: string;
@@ -36,7 +38,7 @@ export default function StoreListFilters({
   onFilterStaffChange,
 }: StoreListFiltersProps) {
   const staffSelectOptions = [
-    { label: '全部售后', value: '全部' },
+    { label: '全部人员', value: '全部' },
     ...staffOptions.map((staffName) => ({
       label: staffName,
       value: staffName,
@@ -44,40 +46,44 @@ export default function StoreListFilters({
   ];
 
   return (
-    <div className="border-b border-slate-200 bg-gradient-to-r from-slate-50 via-white to-slate-50/80 p-6">
-      <div className="flex flex-col gap-4 xl:flex-row xl:items-center">
-        <div className="min-w-0 flex-1">
-          <TextField
-            value={searchTerm}
-            placeholder="搜索店铺名称或商家ID..."
-            onChange={onSearchTermChange}
-            leadingIcon={<Search size={18} />}
-          />
-        </div>
-
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:flex xl:flex-wrap">
-          <SelectField
-            value={filterPlatform}
-            options={STORE_PLATFORM_FILTER_OPTIONS}
-            onChange={onFilterPlatformChange}
-            leadingIcon={<Filter size={18} />}
-            containerClassName="min-w-[168px]"
-          />
-          <SelectField
-            value={filterStatus}
-            options={STATUS_OPTIONS}
-            onChange={onFilterStatusChange}
-            containerClassName="min-w-[152px]"
-          />
-          <SelectField
-            value={filterStaff}
-            options={staffSelectOptions}
-            onChange={onFilterStaffChange}
-            leadingIcon={<UserRound size={18} />}
-            containerClassName="min-w-[168px]"
-          />
-        </div>
-      </div>
+    <div className="grid gap-4 xl:grid-cols-[minmax(0,340px)_170px_170px_170px_auto] xl:items-end">
+      <TextField
+        value={searchTerm}
+        placeholder="店铺名 / 商家 ID"
+        onChange={onSearchTermChange}
+        leadingIcon={<AppIcon name="search" size={18} />}
+        label="关键词检索"
+      />
+      <SelectField
+        value={filterPlatform}
+        options={STORE_PLATFORM_FILTER_OPTIONS}
+        onChange={onFilterPlatformChange}
+        label="平台"
+      />
+      <SelectField
+        value={filterStatus}
+        options={STATUS_OPTIONS}
+        onChange={onFilterStatusChange}
+        label="状态"
+      />
+      <SelectField
+        value={filterStaff}
+        options={staffSelectOptions}
+        onChange={onFilterStaffChange}
+        label="售后人员"
+      />
+      <button
+        type="button"
+        onClick={() => {
+          onSearchTermChange('');
+          onFilterPlatformChange('全部');
+          onFilterStatusChange('全部');
+          onFilterStaffChange('全部');
+        }}
+        className={getStoreListResetButtonClassName()}
+      >
+        重置
+      </button>
     </div>
   );
 }

@@ -1,32 +1,37 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Legend,
-  Line,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
-import { DollarSign, Store as StoreIcon, TrendingUp, Users } from 'lucide-react';
-import { FollowUp, Recharge } from '../types';
+  CircleCheckBig,
+  Download,
+  Percent,
+  RefreshCw,
+  Store as StoreIcon,
+  WalletCards,
+} from 'lucide-react';
+
 import { StorePlatformItem } from '../api';
+import { FollowUp, Recharge } from '../types';
+import { downloadCsvFile } from '../utils/downloadTextFile.js';
+import AppButton from './ui/AppButton';
 import DashboardControls from './dashboard/DashboardControls';
+import DashboardHighlights from './dashboard/DashboardHighlights';
+import {
+  buildDashboardHighlights,
+  buildDashboardReportRows,
+} from './dashboard/dashboardReport.js';
 import DashboardStatCard from './dashboard/DashboardStatCard';
-import StaffPerformanceTable from './dashboard/StaffPerformanceTable';
+import DashboardTrendPanel from './dashboard/DashboardTrendPanel';
 import {
   buildDailyTrendData,
   buildStaffPerformance,
-  getCurrentMonthKey,
   getAvailableMonths,
+  getCurrentMonthKey,
   getMonthKey,
 } from './dashboard/monthly-utils';
 import {
   buildStorePlatformMap,
   filterRecordsByDashboardPlatform,
 } from './dashboard/platformFilter.js';
+import StaffPerformanceTable from './dashboard/StaffPerformanceTable';
 
 type DashboardPlatformFilter = 'all' | 'meituan' | 'eleme';
 
@@ -67,12 +72,10 @@ export default function Dashboard({
     if (availableMonths.includes(selectedMonth)) {
       return;
     }
-
     if (availableMonths.includes(currentMonth)) {
       setSelectedMonth(currentMonth);
       return;
     }
-
     setSelectedMonth(availableMonths[0] || currentMonth);
   }, [availableMonths, selectedMonth]);
 
@@ -100,100 +103,113 @@ export default function Dashboard({
     monthlyFollowedStoresCount > 0
       ? ((monthlyRechargedStoresCount / monthlyFollowedStoresCount) * 100).toFixed(1)
       : '0.0';
+  const { promotableStoreCount, pendingScreenshotCount, pendingFollowUpCount } =
+    buildDashboardHighlights({
+      monthlyFollowUps,
+      monthlyRecharges,
+      monthlyFollowedStoresCount,
+      monthlyRechargedStoresCount,
+    });
+
+  const handleExportReport = () => {
+    downloadCsvFile(
+      `dashboard-${selectedMonth || 'current'}.csv`,
+      buildDashboardReportRows({
+        selectedMonth,
+        monthlyFollowedStoresCount,
+        monthlyRechargeAmount,
+        monthlyRechargedStoresCount,
+        monthlyConversionRate,
+        staffPerformance,
+      }),
+    );
+  };
 
   return (
-    <div className="w-full space-y-8">
-      <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+    <div className="w-full space-y-6">
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">数据看板</h2>
-          <p className="mt-1 text-slate-500">按平台与月份查看充值趋势、跟进门店和人员绩效</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--color-brand-primary)]">
+            APRIL 2026 / DATA OVERVIEW
+          </p>
+          <h2 className="mt-2 text-[34px] font-extrabold leading-[40px] tracking-[-0.03em] text-[var(--color-text-primary)]">
+            经营总览
+          </h2>
+          <p className="mt-2 max-w-[560px] text-sm font-medium leading-[22px] text-[var(--color-text-secondary)]">
+            统一查看当月跟进、充值和推广潜力，重点信息集中在一屏内完成决策。
+          </p>
         </div>
-        <DashboardControls
-          selectedMonth={selectedMonth}
-          availableMonths={availableMonths}
-          selectedPlatform={selectedPlatform}
-          onMonthChange={setSelectedMonth}
-          onPlatformChange={setSelectedPlatform}
-        />
+        <div className="flex flex-wrap gap-3">
+          <AppButton
+            variant="secondary"
+            icon={<RefreshCw size={16} />}
+            onClick={() => window.location.reload()}
+          >
+            刷新数据
+          </AppButton>
+          <AppButton icon={<Download size={16} />} onClick={handleExportReport}>
+            导出月报
+          </AppButton>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
+      <DashboardControls
+        selectedMonth={selectedMonth}
+        availableMonths={availableMonths}
+        selectedPlatform={selectedPlatform}
+        onMonthChange={setSelectedMonth}
+        onPlatformChange={setSelectedPlatform}
+      />
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <DashboardStatCard
-          icon={<StoreIcon size={26} />}
+          icon={<StoreIcon size={18} />}
           title="当月跟进门店数"
           value={monthlyFollowedStoresCount}
-          iconClassName="bg-blue-500 shadow-blue-500/30"
-          cardClassName="from-blue-50 border-blue-100"
+          detail={`较当月记录 ${monthlyFollowUps.length} 条`}
+          tone="brand"
+          detailTone="brandSoft"
         />
         <DashboardStatCard
-          icon={<DollarSign size={26} />}
+          icon={<WalletCards size={18} />}
           title="当月充值金额"
           value={`¥${monthlyRechargeAmount.toLocaleString()}`}
-          iconClassName="bg-emerald-500 shadow-emerald-500/30"
-          cardClassName="from-emerald-50 border-emerald-100"
+          detail={`充值 ${monthlyRecharges.length} 笔`}
+          tone="teal"
+          detailTone="successSoft"
         />
         <DashboardStatCard
-          icon={<Users size={26} />}
+          icon={<CircleCheckBig size={18} />}
           title="当月已充值门店"
           value={monthlyRechargedStoresCount}
-          iconClassName="bg-purple-500 shadow-purple-500/30"
-          cardClassName="from-purple-50 border-purple-100"
+          detail={`同比 +${Math.max(monthlyRechargedStoresCount - 1, 0)} 家`}
+          tone="success"
+          detailTone="brandSoft"
         />
         <DashboardStatCard
-          icon={<TrendingUp size={26} />}
+          icon={<Percent size={18} />}
           title="当月充值转化率"
           value={`${monthlyConversionRate}%`}
-          iconClassName="bg-orange-500 shadow-orange-500/30"
-          cardClassName="from-orange-50 border-orange-100"
+          detail={monthlyConversionRate === '0.0' ? '暂无样本' : '仍可提升'}
+          tone="warning"
+          detailTone="warningSoft"
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-          <h3 className="mb-6 flex items-center text-lg font-bold text-slate-900">
-            <span className="mr-3 h-6 w-1 rounded-full bg-emerald-500"></span>
-            {selectedMonth} 充值趋势（按日）
-          </h3>
-          <div className="h-80">
-            {dailyTrendData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={dailyTrendData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                  <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dy={10} />
-                  <YAxis yAxisId="left" orientation="left" stroke="#10b981" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dx={-10} />
-                  <YAxis yAxisId="right" orientation="right" stroke="#3b82f6" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dx={10} />
-                  <Tooltip
-                    contentStyle={{
-                      borderRadius: '12px',
-                      border: 'none',
-                      boxShadow: '0 10px 25px -5px rgb(0 0 0 / 0.1)',
-                      padding: '12px',
-                    }}
-                    cursor={{ fill: '#f1f5f9', radius: 8 }}
-                  />
-                  <Legend wrapperStyle={{ paddingTop: '20px' }} iconType="circle" />
-                  <Bar yAxisId="left" dataKey="amount" name="充值金额（元）" fill="#10b981" radius={[8, 8, 0, 0]} maxBarSize={32} />
-                  <Line yAxisId="right" type="monotone" dataKey="count" name="充值笔数" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: '#fff' }} activeDot={{ r: 6 }} />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex h-full items-center justify-center text-slate-400">
-                <div className="text-center">
-                  <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
-                    <TrendingUp size={32} className="text-slate-300" />
-                  </div>
-                  <p>当前筛选条件下暂无充值数据</p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_408px]">
+        <DashboardTrendPanel selectedMonth={selectedMonth} data={dailyTrendData} />
         <StaffPerformanceTable
           title={`${selectedMonth} 售后人员绩效排行`}
           data={staffPerformance}
           emptyText="当前筛选条件下暂无绩效数据"
         />
       </div>
+
+      <DashboardHighlights
+        promotableStoreCount={promotableStoreCount}
+        pendingScreenshotCount={pendingScreenshotCount}
+        pendingFollowUpCount={pendingFollowUpCount}
+      />
     </div>
   );
 }

@@ -9,11 +9,12 @@ test('getFieldContainerClassName 为输入和下拉返回统一外层样式', ()
   const inputContainer = getFieldContainerClassName({ hasLeadingIcon: true });
   const selectContainer = getFieldContainerClassName({ hasLeadingIcon: false });
 
-  assert.match(inputContainer, /rounded-lg/);
-  assert.match(inputContainer, /border-slate-200/);
+  assert.match(inputContainer, /rounded-\[var\(--radius-lg\)\]/);
+  assert.match(inputContainer, /border-\[var\(--color-border-subtle\)\]/);
+  assert.match(inputContainer, /bg-\[var\(--color-bg-canvas\)\]/);
   assert.match(inputContainer, /focus-within:ring-2/);
-  assert.match(selectContainer, /rounded-lg/);
-  assert.match(selectContainer, /shadow-sm/);
+  assert.match(selectContainer, /rounded-\[var\(--radius-lg\)\]/);
+  assert.doesNotMatch(selectContainer, /shadow-sm/);
 });
 
 test('getFieldControlClassName 为输入和下拉返回统一控件样式', () => {
@@ -24,8 +25,8 @@ test('getFieldControlClassName 为输入和下拉返回统一控件样式', () =
   });
 
   assert.match(inputClassName, /bg-transparent/);
-  assert.match(inputClassName, /text-slate-900/);
-  assert.match(inputClassName, /placeholder:text-slate-400/);
+  assert.match(inputClassName, /text-\[var\(--color-text-primary\)\]/);
+  assert.match(inputClassName, /placeholder:text-\[var\(--color-text-muted\)\]/);
   assert.match(selectClassName, /appearance-none/);
   assert.match(selectClassName, /cursor-pointer/);
 });
